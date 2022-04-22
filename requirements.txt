@@ -27,8 +27,4 @@ ujson==5.2.0
 urllib3==1.26.9
 uvicorn==0.17.6
 watchgod==0.8.2
-<<<<<<< HEAD
 websockets==10.3
-=======
-websockets==10.3
->>>>>>> 80c86b0851ffa1ec2a6aac9c5d7b8707af69f526
