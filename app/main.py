@@ -26,6 +26,7 @@ while True:
     except Exception as e:
         print("Unable to connect to database")
         print("Error: ", e)
+        time.sleep(5)
 
 
 # create the root route
