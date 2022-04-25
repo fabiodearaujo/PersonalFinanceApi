@@ -37,4 +37,28 @@ while True:
 # create the root route
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Welcome to Personal Finance API": "Get our app at APP_URL"}
+
+
+# create a route to return one user
+@app.get("/users/{email}")
+def read_user(email: str):
+    cursor.execute(f"SELECT * FROM users WHERE email = '{email}'")
+    user = cursor.fetchone()
+    return {"data": user}
+
+
+# create a route to return all transactions from a user
+@app.get("/users/transactions/{user_id}")
+def read_transactions(user_id: int):
+    cursor.execute(f"SELECT * FROM transactions WHERE user_id = {user_id}")
+    transactions = cursor.fetchall()
+    return {"data": transactions}
+
+
+# create a route to return all suggestions
+@app.get("/suggestions")
+def read_suggestions():
+    cursor.execute("SELECT * FROM suggestions")
+    suggestions = cursor.fetchall()
+    return {"data": suggestions}
