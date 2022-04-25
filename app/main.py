@@ -18,8 +18,13 @@ DB_PASSWORD = config('DB_PASSWORD')
 # database connection
 while True:
     try:
-        conn = psycopg2.connect(host=DB_ADDRESS, database=DB_NAME, user=DB_USER, 
-                                password=DB_PASSWORD, cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(
+            host=DB_ADDRESS,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            cursor_factory=RealDictCursor,
+        )
         cursor = conn.cursor()
         print("Connected to database")
         break

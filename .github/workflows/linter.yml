@@ -1,3 +1,4 @@
+---
 name: CI + CD pipeline with Super Linter
 
 # Define when the workflow should run. On a push to main,
