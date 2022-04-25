@@ -1,0 +1,26 @@
+---
+name: CI + CD pipeline with Super Linter
+
+# Define when the workflow should run. On a push to main,
+# a PR to main or manually with workflow_dispatch
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Define some jobs that should run
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: fabio
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
