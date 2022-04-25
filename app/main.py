@@ -37,7 +37,8 @@ while True:
 # create the root route
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Welcome to Personal Finance API": "Get our app at APP_URL"}
+
 
 # create a route to return one user
 @app.get("/users/{email}")
