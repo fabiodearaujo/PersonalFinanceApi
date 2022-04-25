@@ -1,6 +1,6 @@
 # necessary imports
-import psycopg2
 import time
+import psycopg2
 from decouple import config
 from fastapi import FastAPI
 from psycopg2.extras import RealDictCursor
@@ -8,12 +8,11 @@ from psycopg2.extras import RealDictCursor
 # create a FastAPI app instance
 app = FastAPI()
 
-
 # configuring the environment variables
-DB_USER = config('DB_USER')
-DB_NAME = config('DB_NAME')
-DB_ADDRESS = config('DB_ADDRESS')
-DB_PASSWORD = config('DB_PASSWORD')
+DB_USER = config("DB_USER")
+DB_NAME = config("DB_NAME")
+DB_ADDRESS = config("DB_ADDRESS")
+DB_PASSWORD = config("DB_PASSWORD")
 
 # database connection
 while True:
