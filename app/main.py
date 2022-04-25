@@ -1,5 +1,6 @@
 # necessary imports
 import time
+
 import psycopg2
 from decouple import config
 from fastapi import FastAPI
