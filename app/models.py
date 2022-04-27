@@ -1,8 +1,10 @@
 # necessary imports to setup the models
+from operator import index
 from sqlalchemy import (
     Column,
     Date,
     Float,
+    ForeignKey,
     Integer,
     String,
 )
@@ -22,7 +24,8 @@ class User(Base):
 class Transaction(Base):
     __tablename__ = "transactions"
     transaction_id = Column(Integer, primary_key=True, nullable=False, index=True)
-    user_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"),
+        nullable=False, index=True)
     transaction_name = Column(String, nullable=False)
     transaction_category = Column(String, nullable=False)
     transaction_type = Column(String, nullable=False)
