@@ -31,7 +31,8 @@ class Transaction(Base):
     transactio_date = Column(Date, nullable=False)
     account_type = Column(String, nullable=False)
 
-    ForeignKeyConstraint(['user_id'], ['users.user_id'])
+
+ForeignKeyConstraint(['user_id'], ['users.user_id'])
 
 
 # create the Suggestion model
