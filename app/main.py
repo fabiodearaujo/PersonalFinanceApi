@@ -5,9 +5,10 @@ import psycopg2
 from decouple import config
 from fastapi import Depends, FastAPI
 from psycopg2.extras import RealDictCursor
+from sqlalchemy.orm import Session
+
 from . import models
 from .database import engine, get_db
-from sqlalchemy.orm import Session
 
 models.Base.metadata.create_all(bind=engine)
 

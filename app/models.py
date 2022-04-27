@@ -1,6 +1,15 @@
 # necessary imports to setup the models
+from sqlalchemy import (
+    Column,
+    ForeignKeyConstraint,
+    Integer,
+    String,
+    Float,
+    Date
+)
+
 from .database import Base
-from sqlalchemy import Column, ForeignKeyConstraint, Integer, String, Float, Date
+
 
 # create the User model
 class User(Base):
@@ -8,7 +17,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
     email = Column(String, unique=True, nullable=False, index=True)
     password = Column(String)
-    
+
 
 # create the Transaction model
 class Transaction(Base):
@@ -21,6 +30,7 @@ class Transaction(Base):
     transaction_value = Column(Float, nullable=False)
     transactio_date = Column(Date, nullable=False)
     account_type = Column(String, nullable=False)
+
     ForeignKeyConstraint(['user_id'], ['users.user_id'])
 
 
