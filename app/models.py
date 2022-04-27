@@ -1,11 +1,11 @@
 # necessary imports to setup the models
 from sqlalchemy import (
     Column,
+    Date,
+    Float,
     ForeignKeyConstraint,
     Integer,
-    String,
-    Float,
-    Date
+    String
 )
 
 from .database import Base
@@ -30,6 +30,7 @@ class Transaction(Base):
     transaction_value = Column(Float, nullable=False)
     transactio_date = Column(Date, nullable=False)
     account_type = Column(String, nullable=False)
+
 
     ForeignKeyConstraint(['user_id'], ['users.user_id'])
 
