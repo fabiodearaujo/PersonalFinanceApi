@@ -3,8 +3,13 @@ import time
 
 import psycopg2
 from decouple import config
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from psycopg2.extras import RealDictCursor
+from . import models
+from .database import engine, get_db
+from sqlalchemy.orm import Session
+
+models.Base.metadata.create_all(bind=engine)
 
 # create a FastAPI app instance
 app = FastAPI()
@@ -32,6 +37,15 @@ while True:
         print("Unable to connect to database")
         print("Error: ", e)
         time.sleep(5)
+
+
+@app.get("/sqlalchemy/")
+def get_sqlalchemy_get_users(db: Session = Depends(get_db)):
+    """
+    Get all users from the database
+    """
+    users = db.query(models.User).all()
+    return {"data": users}
 
 
 # create the root route
