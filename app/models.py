@@ -3,7 +3,6 @@ from sqlalchemy import (
     Column,
     Date,
     Float,
-    ForeignKeyConstraint,
     Integer,
     String,
 )
@@ -30,9 +29,6 @@ class Transaction(Base):
     transaction_value = Column(Float, nullable=False)
     transactio_date = Column(Date, nullable=False)
     account_type = Column(String, nullable=False)
-
-
-ForeignKeyConstraint(['user_id'], ['users.user_id'])
 
 
 # create the Suggestion model
