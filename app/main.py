@@ -8,7 +8,7 @@ from psycopg2.extras import RealDictCursor
 from sqlalchemy.orm import Session
 
 from .database import engine, get_db
-from .models import User, Transaction, Suggestion, Base
+from .models import Base, Suggestion, Transaction, User
 
 Base.metadata.create_all(bind=engine)
 
