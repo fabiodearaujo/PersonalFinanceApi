@@ -3,41 +3,44 @@ import time
 
 import psycopg2
 from decouple import config
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, status
+from http.client import HTTPException
 from psycopg2.extras import RealDictCursor
 from sqlalchemy.orm import Session
 
+from . import models, schemas, utils
 from .database import engine, get_db
-from .models import Base, Suggestion, Transaction, User
 
-Base.metadata.create_all(bind=engine)
+
+
+models.Base.metadata.create_all(bind=engine)
 
 # create a FastAPI app instance
 app = FastAPI()
 
-# configuring the environment variables
-DB_USER = config("DB_USER")
-DB_NAME = config("DB_NAME")
-DB_ADDRESS = config("DB_ADDRESS")
-DB_PASSWORD = config("DB_PASSWORD")
+# # configuring the environment variables
+# DB_USER = config("DB_USER")
+# DB_NAME = config("DB_NAME")
+# DB_ADDRESS = config("DB_ADDRESS")
+# DB_PASSWORD = config("DB_PASSWORD")
 
-# database connection
-while True:
-    try:
-        conn = psycopg2.connect(
-            host=DB_ADDRESS,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            cursor_factory=RealDictCursor,
-        )
-        cursor = conn.cursor()
-        print("Connected to database")
-        break
-    except Exception as e:
-        print("Unable to connect to database")
-        print("Error: ", e)
-        time.sleep(5)
+# # database connection
+# while True:
+#     try:
+#         conn = psycopg2.connect(
+#             host=DB_ADDRESS,
+#             database=DB_NAME,
+#             user=DB_USER,
+#             password=DB_PASSWORD,
+#             cursor_factory=RealDictCursor,
+#         )
+#         cursor = conn.cursor()
+#         print("Connected to database")
+#         break
+#     except Exception as e:
+#         print("Unable to connect to database")
+#         print("Error: ", e)
+#         time.sleep(5)
 
 
 # create the root route
@@ -49,27 +52,36 @@ def read_root():
 # create a route to return one user
 @app.get("/users/{email}")
 def read_user(email: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
-    return {"data": user} if user else {"error": "User not found"}
-
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"The email '{email}' doesn't is not registered.",
+        )
+    return {"data": user}
 
 # create a route to add a user
 @app.post("/users", status_code=201)
-def create_user(email: str, password: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
-    if user:
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    checkuser = (db.query(models.User)
+        .filter(models.User.email == user.email)
+        .first()
+    )
+    if checkuser:
         return {"error": "User already exists"}
-    user = User(email=email, password=password)
-    db.add(user)
+    
+    hashed_password = utils.hash_pass(user.password)
+    new_user = models.User(email=user.email, password=hashed_password)
+    db.add(new_user)
     db.commit()
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(models.User).filter(models.User.email == user.email).first()
     return {"data": user}
 
 
 # create a route to return all transactions from a user
 @app.get("/transactions/{user_id}")
 def read_transactions(user_id: int, db: Session = Depends(get_db)):
-    transactions = db.query(Transaction).filter(Transaction.user_id == user_id).all()
+    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
     return {"data": transactions}
 
 
@@ -86,15 +98,15 @@ def create_transaction(
     db: Session = Depends(get_db),
 ):
     existing_user = (
-        db.query(User)
+        db.query(models.User)
         .filter(
-            User.user_id == user_id,
+            models.User.user_id == user_id,
         )
         .first()
     )
     if existing_user is None:
         return {"error": "There is no user with that id"}
-    transaction = Transaction(
+    transaction = models.Transaction(
         user_id=user_id,
         transaction_name=transaction_name,
         transaction_category=transaction_category,
@@ -106,11 +118,11 @@ def create_transaction(
     db.add(transaction)
     db.commit()
     transaction = (
-        db.query(Transaction)
-        .order_by(Transaction.transaction_id.desc())
+        db.query(models.Transaction)
+        .order_by(models.Transaction.transaction_id.desc())
         .filter(
-            Transaction.transaction_name == transaction_name
-            and Transaction.user_id == user_id,
+            models.Transaction.transaction_name == transaction_name
+            and models.Transaction.user_id == user_id,
         )
         .first()
     )
@@ -128,9 +140,9 @@ def move_funds(
 ):
     # check if user exists
     existing_user = (
-        db.query(User)
+        db.query(models.User)
         .filter(
-            User.user_id == user_id,
+            models.User.user_id == user_id,
         )
         .first()
     )
@@ -147,11 +159,11 @@ def move_funds(
 
     # get the origin account balance
     main_account_credit = (
-        db.query(Transaction)
+        db.query(models.Transaction)
         .filter(
-            Transaction.user_id == user_id,
-            Transaction.account_type == account_debit,
-            Transaction.transaction_type == "credit",
+            models.Transaction.user_id == user_id,
+            models.Transaction.account_type == account_debit,
+            models.Transaction.transaction_type == "credit",
         )
         .all()
     )
@@ -162,11 +174,11 @@ def move_funds(
 
     # get the origin account debits
     main_account_debit = (
-        db.query(Transaction)
+        db.query(models.Transaction)
         .filter(
-            Transaction.user_id == user_id,
-            Transaction.account_type == account_debit,
-            Transaction.transaction_type == "debit",
+            models.Transaction.user_id == user_id,
+            models.Transaction.account_type == account_debit,
+            models.Transaction.transaction_type == "debit",
         )
         .all()
     )
@@ -183,7 +195,7 @@ def move_funds(
         return {"error": "Not enough funds to move funds"}
 
     # debit transaction
-    debit_transaction = Transaction(
+    debit_transaction = models.Transaction(
         user_id=user_id,
         transaction_name="Transfer funds",
         transaction_category="Transfer",
@@ -196,7 +208,7 @@ def move_funds(
     db.commit()
 
     # credit transaction
-    credit_transaction = Transaction(
+    credit_transaction = models.Transaction(
         user_id=user_id,
         transaction_name="Receive funds",
         transaction_category="Transfer",
@@ -208,11 +220,11 @@ def move_funds(
     db.add(credit_transaction)
     db.commit()
     transaction_credit_registered = (
-        db.query(Transaction)
-        .order_by(Transaction.transaction_id.desc())
+        db.query(models.Transaction)
+        .order_by(models.Transaction.transaction_id.desc())
         .filter(
-            Transaction.transaction_category == "Transfer"
-            and Transaction.user_id == user_id,
+            models.Transaction.transaction_category == "Transfer"
+            and models.Transaction.user_id == user_id,
         )
         .first()
     )
@@ -225,7 +237,7 @@ def move_funds(
 # create a route to return all suggestions
 @app.get("/suggestions")
 def read_suggestions(db: Session = Depends(get_db)):
-    suggestions = db.query(Suggestion).all()
+    suggestions = db.query(models.Suggestion).all()
     return {"data": suggestions}
 
 
@@ -236,17 +248,17 @@ def create_suggestion(
     description: str,
     db: Session = Depends(get_db),
 ):
-    suggestion = Suggestion(
+    suggestion = models.Suggestion(
         category=category,
         description=description,
     )
     db.add(suggestion)
     db.commit()
     suggestion = (
-        db.query(Suggestion)
-        .order_by(Suggestion.suggestion_id.desc())
+        db.query(models.Suggestion)
+        .order_by(models.Suggestion.suggestion_id.desc())
         .filter(
-            Suggestion.category == category,
+            models.Suggestion.category == category,
         )
         .first()
     )
