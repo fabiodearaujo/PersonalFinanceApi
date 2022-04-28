@@ -9,7 +9,7 @@ class User(Base):
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
     email = Column(String, unique=True, nullable=False, index=True)
-    password = Column(String)
+    password = Column(String, nullable=False)
 
 
 # create the Transaction model
@@ -21,7 +21,7 @@ class Transaction(Base):
     transaction_category = Column(String, nullable=False)
     transaction_type = Column(String, nullable=False)
     transaction_value = Column(Float, nullable=False)
-    transactio_date = Column(Date, nullable=False)
+    transaction_date = Column(Date, nullable=False)
     account_type = Column(String, nullable=False)
 
 
