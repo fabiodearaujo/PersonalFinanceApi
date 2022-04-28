@@ -188,7 +188,7 @@ def move_funds(
     db.commit()
     transaction_credit_registered = db.query(Transaction).order_by(
         Transaction.transaction_id.desc()).filter(
-        Transaction.transaction_category == "Transfer" and user_id == user_id,
+        Transaction.transaction_category == "Transfer" and Transaction.user_id == user_id,
     ).first()
     return {"Message": "Funds moved successfully", "data": transaction_credit_registered}
     
