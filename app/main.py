@@ -85,9 +85,13 @@ def create_transaction(
     account_type: str,
     db: Session = Depends(get_db),
 ):
-    existing_user = db.query(User).filter(
-        User.user_id == user_id,
-    ).first()
+    existing_user = (
+        db.query(User)
+        .filter(
+            User.user_id == user_id,
+        )
+        .first()
+    )
     if existing_user == None:
         return {"error": "There is no user with that id"}
     transaction = Transaction(
@@ -98,13 +102,18 @@ def create_transaction(
         transaction_value=transaction_value,
         transaction_date=transaction_date,
         account_type=account_type,
-    )   
+    )
     db.add(transaction)
     db.commit()
-    transaction = db.query(Transaction).order_by(
-        Transaction.transaction_id.desc()).filter(
-        Transaction.transaction_name == transaction_name and Transaction.user_id == user_id,
-    ).first()
+    transaction = (
+        db.query(Transaction)
+        .order_by(Transaction.transaction_id.desc())
+        .filter(
+            Transaction.transaction_name == transaction_name
+            and Transaction.user_id == user_id,
+        )
+        .first()
+    )
     return {"data": transaction}
 
 
@@ -118,12 +127,16 @@ def move_funds(
     db: Session = Depends(get_db),
 ):
     # check if user exists
-    existing_user = db.query(User).filter(
-        User.user_id == user_id,
-    ).first()
+    existing_user = (
+        db.query(User)
+        .filter(
+            User.user_id == user_id,
+        )
+        .first()
+    )
     if existing_user == None:
         return {"error": "There is no user with that id"}
-    
+
     # defining the direction of the transaction
     if account_type == "main":
         account_debit = "savings"
@@ -131,24 +144,31 @@ def move_funds(
     else:
         account_debit = "main"
         account_credit = "savings"
-    
+
     # get the origin account balance
-    main_account_credit = db.query(Transaction).filter(
-        Transaction.user_id == user_id,
-        Transaction.account_type == account_debit,
-        Transaction.transaction_type == "credit",
-    ).all()
+    main_account_credit = (
+        db.query(Transaction)
+        .filter(
+            Transaction.user_id == user_id,
+            Transaction.account_type == account_debit,
+            Transaction.transaction_type == "credit",
+        )
+        .all()
+    )
     # get the total credit amount of origin account
     main_account_credit_total = 0
     for transaction in main_account_credit:
         main_account_credit_total += transaction.transaction_value
 
     # get the origin account debits
-    main_account_debit = db.query(Transaction).filter(
-        Transaction.user_id == user_id,
-        Transaction.account_type == account_debit,
-        Transaction.transaction_type == "debit",
-    ).all()
+    main_account_debit = (
+        db.query(Transaction).filter(
+            Transaction.user_id == user_id,
+            Transaction.account_type == account_debit,
+            Transaction.transaction_type == "debit",
+        )
+        .all()
+    )
 
     # get the total debit amount of origin account
     main_account_debit_total = 0
@@ -186,11 +206,19 @@ def move_funds(
     )
     db.add(credit_transaction)
     db.commit()
-    transaction_credit_registered = db.query(Transaction).order_by(
-        Transaction.transaction_id.desc()).filter(
-        Transaction.transaction_category == "Transfer" and Transaction.user_id == user_id,
-    ).first()
-    return {"Message": "Funds moved successfully", "data": transaction_credit_registered}
+    transaction_credit_registered = (
+        db.query(Transaction)
+        .order_by(Transaction.transaction_id.desc())
+        .filter(
+            Transaction.transaction_category == "Transfer"
+            and Transaction.user_id == user_id,
+        )
+        .first()
+    )
+    return {
+        "Message": "Funds moved successfully",
+        "data": transaction_credit_registered,
+    }
     
 
 
@@ -212,11 +240,15 @@ def create_suggestion(
     suggestion = Suggestion(
         category=category,
         description=description,
-    )   
+    )
     db.add(suggestion)
     db.commit()
-    suggestion = db.query(Suggestion).order_by(
-        Suggestion.suggestion_id.desc()).filter(
-        Suggestion.category == category,
-    ).first()
+    suggestion = (
+        db.query(Suggestion)
+        .order_by(Suggestion.suggestion_id.desc())
+        .filter(
+            Suggestion.category == category,
+        )
+        .first()
+    )
     return {"data": suggestion}
