@@ -7,8 +7,8 @@ from fastapi import Depends, FastAPI
 from psycopg2.extras import RealDictCursor
 from sqlalchemy.orm import Session
 
-from .models import User, Transaction, Suggestion, Base
 from .database import engine, get_db
+from .models import User, Transaction, Suggestion, Base
 
 Base.metadata.create_all(bind=engine)
 
@@ -92,7 +92,7 @@ def create_transaction(
         )
         .first()
     )
-    if existing_user == None:
+    if existing_user is None:
         return {"error": "There is no user with that id"}
     transaction = Transaction(
         user_id=user_id,
@@ -134,7 +134,7 @@ def move_funds(
         )
         .first()
     )
-    if existing_user == None:
+    if existing_user is None:
         return {"error": "There is no user with that id"}
 
     # defining the direction of the transaction
@@ -162,7 +162,8 @@ def move_funds(
 
     # get the origin account debits
     main_account_debit = (
-        db.query(Transaction).filter(
+        db.query(Transaction)
+        .filter(
             Transaction.user_id == user_id,
             Transaction.account_type == account_debit,
             Transaction.transaction_type == "debit",
@@ -219,8 +220,6 @@ def move_funds(
         "Message": "Funds moved successfully",
         "data": transaction_credit_registered,
     }
-    
-
 
 
 # create a route to return all suggestions
