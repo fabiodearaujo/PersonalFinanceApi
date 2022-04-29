@@ -1,11 +1,11 @@
 # necessary imports
+from msilib import schema
 import time
 
-import psycopg2
+# import psycopg2
 from decouple import config
 from fastapi import Depends, FastAPI, status
 from http.client import HTTPException
-from psycopg2.extras import RealDictCursor
 from sqlalchemy.orm import Session
 
 from . import models, schemas, utils
@@ -54,10 +54,8 @@ def read_root():
 def read_user(email: str, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == email).first()
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"The email '{email}' doesn't is not registered.",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"The email '{email}' doesn't is not registered.")
     return {"data": user}
 
 # create a route to add a user
@@ -69,13 +67,11 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     )
     if checkuser:
         return {"error": "User already exists"}
-    
-    hashed_password = utils.hash_pass(user.password)
+    hashed_password = utils.hash_context(user.password)
     new_user = models.User(email=user.email, password=hashed_password)
     db.add(new_user)
     db.commit()
-    user = db.query(models.User).filter(models.User.email == user.email).first()
-    return {"data": user}
+    return {"Message": "User created successfully"}
 
 
 # create a route to return all transactions from a user
