@@ -1,12 +1,8 @@
 # necessary imports
-from msilib import schema
-import time
-
-# import psycopg2
-from decouple import config
-from fastapi import Depends, FastAPI, status
-from http.client import HTTPException
+from typing import List
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
+from fastapi import Depends, FastAPI, status
 
 from . import models, schemas, utils
 from .database import engine, get_db
@@ -18,116 +14,77 @@ models.Base.metadata.create_all(bind=engine)
 # create a FastAPI app instance
 app = FastAPI()
 
-# # configuring the environment variables
-# DB_USER = config("DB_USER")
-# DB_NAME = config("DB_NAME")
-# DB_ADDRESS = config("DB_ADDRESS")
-# DB_PASSWORD = config("DB_PASSWORD")
-
-# # database connection
-# while True:
-#     try:
-#         conn = psycopg2.connect(
-#             host=DB_ADDRESS,
-#             database=DB_NAME,
-#             user=DB_USER,
-#             password=DB_PASSWORD,
-#             cursor_factory=RealDictCursor,
-#         )
-#         cursor = conn.cursor()
-#         print("Connected to database")
-#         break
-#     except Exception as e:
-#         print("Unable to connect to database")
-#         print("Error: ", e)
-#         time.sleep(5)
-
-
 # create the root route
 @app.get("/")
 def read_root():
-    return {"Welcome to Personal Finance API": "Get our app at APP_URL"}
+    return {"Welcome to Personal Finance API": "Get our app at APP_URL"}, status.HTTP_200_OK
 
 
 # create a route to return one user
-@app.get("/users/{email}")
-def read_user(email: str, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == email).first()
+@app.get("/users/{email}", status_code=200)
+async def read_user(email: EmailStr, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == email.lower()).first()
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"The email '{email}' doesn't is not registered.")
-    return {"data": user}
+       return {"error": "User not found"}, status.HTTP_404_NOT_FOUND
+    return {"Message": "User is already registered"}, status.HTTP_200_OK
+
 
 # create a route to add a user
-@app.post("/users", status_code=201)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+@app.post("/users", status_code=201, response_model=schemas.UserCreate)
+async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     checkuser = (db.query(models.User)
-        .filter(models.User.email == user.email)
+        .filter(models.User.email == user.email.lower())
         .first()
     )
     if checkuser:
-        return {"error": "User already exists"}
+        return {"error": "User already exists"}, status.HTTP_400_BAD_REQUEST
     hashed_password = utils.hash_context(user.password)
-    new_user = models.User(email=user.email, password=hashed_password)
+    new_user = models.User(email=user.email.lower(), password=hashed_password)
     db.add(new_user)
     db.commit()
-    return {"Message": "User created successfully"}
+    return {"Message": "User created successfully"}, status.HTTP_201_CREATED
 
 
 # create a route to return all transactions from a user
-@app.get("/transactions/{user_id}")
-def read_transactions(user_id: int, db: Session = Depends(get_db)):
+@app.get("/transactions/{user_id}" , status_code=200)
+async def read_transactions(user_id: int, db: Session = Depends(get_db)):
     transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
-    return {"data": transactions}
+    return {"data": transactions}, status.HTTP_200_OK
 
 
 # create a route to add a transaction
 @app.post("/transactions", status_code=201)
-def create_transaction(
-    user_id: int,
-    transaction_name: str,
-    transaction_category: str,
-    transaction_type: str,
-    transaction_value: float,
-    transaction_date: str,
-    account_type: str,
+async def create_transaction(
+    transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
 ):
     existing_user = (
         db.query(models.User)
         .filter(
-            models.User.user_id == user_id,
+            models.User.user_id == transaction.user_id,
         )
         .first()
     )
     if existing_user is None:
-        return {"error": "There is no user with that id"}
-    transaction = models.Transaction(
-        user_id=user_id,
-        transaction_name=transaction_name,
-        transaction_category=transaction_category,
-        transaction_type=transaction_type,
-        transaction_value=transaction_value,
-        transaction_date=transaction_date,
-        account_type=account_type,
-    )
-    db.add(transaction)
+        return {"error": "There is no user with that id"}, status.HTTP_404_NOT_FOUND
+    new_transaction = models.Transaction(**transaction.dict())
+    db.add(new_transaction)
     db.commit()
     transaction = (
         db.query(models.Transaction)
         .order_by(models.Transaction.transaction_id.desc())
         .filter(
-            models.Transaction.transaction_name == transaction_name
-            and models.Transaction.user_id == user_id,
+            models.Transaction.transaction_name == transaction.transaction_name
+            and models.Transaction.user_id == transaction.user_id,
         )
         .first()
     )
-    return {"data": transaction}
+    return {"data": transaction}, status.HTTP_201_CREATED
 
 
 # create a route to move funds from one account to another
 @app.post("/move_funds", status_code=201)
-def move_funds(
+async def move_funds(
     user_id: int,
     transaction_value: float,
     transaction_date: str,
@@ -143,7 +100,7 @@ def move_funds(
         .first()
     )
     if existing_user is None:
-        return {"error": "There is no user with that id"}
+        return {"error": "There is no user with that id"}, status.HTTP_404_NOT_FOUND
 
     # defining the direction of the transaction
     if account_type == "main":
@@ -188,13 +145,13 @@ def move_funds(
 
     # check if user has enough funds to move funds
     if main_account_balance < transaction_value:
-        return {"error": "Not enough funds to move funds"}
+        return {"error": "Not enough funds to move funds"}, status.HTTP_400_BAD_REQUEST
 
     # debit transaction
     debit_transaction = models.Transaction(
         user_id=user_id,
         transaction_name="Transfer funds",
-        transaction_category="Transfer",
+        transaction_category="transfer",
         transaction_type="debit",
         transaction_value=transaction_value,
         transaction_date=transaction_date,
@@ -207,7 +164,7 @@ def move_funds(
     credit_transaction = models.Transaction(
         user_id=user_id,
         transaction_name="Receive funds",
-        transaction_category="Transfer",
+        transaction_category="transfer",
         transaction_type="credit",
         transaction_value=transaction_value,
         transaction_date=transaction_date,
@@ -227,19 +184,19 @@ def move_funds(
     return {
         "Message": "Funds moved successfully",
         "data": transaction_credit_registered,
-    }
+    }, status.HTTP_201_CREATED
 
 
 # create a route to return all suggestions
 @app.get("/suggestions")
-def read_suggestions(db: Session = Depends(get_db)):
+async def read_suggestions(db: Session = Depends(get_db)):
     suggestions = db.query(models.Suggestion).all()
-    return {"data": suggestions}
+    return {"data": suggestions}, status.HTTP_200_OK
 
 
 # create a route to add a suggestion
 @app.post("/suggestions", status_code=201)
-def create_suggestion(
+async def create_suggestion(
     category: str,
     description: str,
     db: Session = Depends(get_db),
@@ -258,4 +215,4 @@ def create_suggestion(
         )
         .first()
     )
-    return {"data": suggestion}
+    return {"data": suggestion}, status.HTTP_201_CREATED

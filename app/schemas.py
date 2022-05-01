@@ -11,9 +11,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    email: EmailStr
-    password: str
-
+    
     class Config:
         orm_mode = True
 
@@ -27,6 +25,7 @@ class UserUpdate(UserBase):
 
 
 class TransactionBase(BaseModel):
+    user_id: int
     transaction_name: str
     transaction_category: str
     transaction_type: str
@@ -36,13 +35,7 @@ class TransactionBase(BaseModel):
 
 
 class TransactionCreate(TransactionBase):
-    transaction_name: str
-    transaction_category: str
-    transaction_type: str
-    transaction_value: float
-    transaction_date: date
-    account_type: str
-
+   
     class Config:
         orm_mode = True
 
@@ -65,9 +58,7 @@ class SuggestionBase(BaseModel):
 
 
 class SuggestionCreate(SuggestionBase):
-    category: str
-    description: str
-
+   
     class Config:
         orm_mode = True
 
