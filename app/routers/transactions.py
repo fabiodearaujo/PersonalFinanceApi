@@ -11,8 +11,7 @@ router = APIRouter()
 @router.get("/{user_id}", status_code=200)
 async def get_all_transactions(user_id: int, db: Session = Depends(get_db)):
     transactions = (
-        db.query(models.Transaction)
-        .filter(models.Transaction.user_id == user_id).all()
+        db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
     )
     return {"data": transactions}, status.HTTP_200_OK
 
@@ -22,9 +21,11 @@ async def get_all_transactions(user_id: int, db: Session = Depends(get_db)):
 async def get_one_transaction(
     transaction_id: int, db: Session = Depends(get_db)
 ):
-    transaction = db.query(models.Transaction).filter(
-        models.Transaction.transaction_id == transaction_id
-    ).first()
+    transaction = (
+        db.query(models.Transaction)
+        .filter(models.Transaction.transaction_id == transaction_id)
+        .first()
+    )
     return {"data": transaction}, status.HTTP_200_OK
 
 
@@ -42,9 +43,7 @@ async def create_transaction(
         .first()
     )
     if existing_user is None:
-        return {
-            "error": "There is no user with that id"
-        }, status.HTTP_404_NOT_FOUND
+        return {"error": "There is no user with that id"}, status.HTTP_404_NOT_FOUND
     new_transaction = models.Transaction(**transaction.dict())
     db.add(new_transaction)
     db.commit()
@@ -67,22 +66,22 @@ async def edit_transaction(
     transaction: schemas.TransactionUpdate,
     db: Session = Depends(get_db),
 ):
-    existing_transaction = (
+    transaction_to_edit = (
         db.query(models.Transaction)
         .filter(models.Transaction.transaction_id == transaction_id)
         .first()
     )
-    if existing_transaction.transaction_category == "transfer":
+    if transaction_to_edit.transaction_category == "transfer":
         return {
             "error": "You cannot edit a transfer transaction"
         }, status.HTTP_400_BAD_REQUEST
-    existing_transaction.transaction_name = transaction.transaction_name
-    existing_transaction.transaction_category = transaction.transaction_category
-    existing_transaction.transaction_type = transaction.transaction_type
-    existing_transaction.transaction_value = transaction.transaction_value
-    existing_transaction.transaction_date = transaction.transaction_date
+    transaction_to_edit.transaction_name = transaction.transaction_name
+    transaction_to_edit.transaction_category = transaction.transaction_category
+    transaction_to_edit.transaction_type = transaction.transaction_type
+    transaction_to_edit.transaction_value = transaction.transaction_value
+    transaction_to_edit.transaction_date = transaction.transaction_date
     db.commit()
-    return {"data": existing_transaction}, status.HTTP_200_OK
+    return {"data": transaction_to_edit}, status.HTTP_200_OK
 
 
 # route to delete a transaction

@@ -36,12 +36,12 @@ async def create_suggestion(
 
 # route to return one suggestion
 @router.get("/get_one/{suggestion_id}", status_code=200)
-async def get_one_suggestion(
-    suggestion_id: int, db: Session = Depends(get_db)
-):
-    suggestion = db.query(models.Suggestion).filter(
-        models.Suggestion.suggestion_id == suggestion_id
-    ).first()
+async def get_one_suggestion(suggestion_id: int, db: Session = Depends(get_db)):
+    suggestion = (
+        db.query(models.Suggestion)
+        .filter(models.Suggestion.suggestion_id == suggestion_id)
+        .first()
+    )
     return {"data": suggestion}, status.HTTP_200_OK
 
 
@@ -52,13 +52,11 @@ async def update_suggestion(
     suggestion: schemas.SuggestionUpdate,
     db: Session = Depends(get_db),
 ):
-    suggestion_to_update = db.query(models.Suggestion).filter(
-        models.Suggestion.suggestion_id == suggestion_id
-    ).first()
-    if suggestion_to_update is None:
-        return {
-            "error": "There is no suggestion with that id"
-        }, status.HTTP_404_NOT_FOUND
+    suggestion_to_update = (
+        db.query(models.Suggestion)
+        .filter(models.Suggestion.suggestion_id == suggestion_id)
+        .first()
+    )
     suggestion_to_update.category = suggestion.category
     db.commit()
     return {"Message": "Suggestion updated succesfully."}, status.HTTP_200_OK
@@ -71,13 +69,11 @@ async def delete_suggestion(
     confirm: str,
     db: Session = Depends(get_db),
 ):
-    suggestion_to_delete = db.query(models.Suggestion).filter(
-        models.Suggestion.suggestion_id == suggestion_id
-    ).first()
-    if suggestion_to_delete is None:
-        return {
-            "error": "There is no suggestion with that id"
-        }, status.HTTP_404_NOT_FOUND
+    suggestion_to_delete = (
+        db.query(models.Suggestion)
+        .filter(models.Suggestion.suggestion_id == suggestion_id)
+        .first()
+    )
     if confirm.lower() == 'n':
         return {
             "error": "Deletion Canceled."

@@ -44,6 +44,7 @@ class TransactionReturnOne(TransactionBase):
     class Config:
         orm_mode = True
 
+
 class TransactionCreate(TransactionBase):
     class Config:
         orm_mode = True
