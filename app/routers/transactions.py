@@ -9,7 +9,9 @@ router = APIRouter()
 # route to return all transactions from a user
 @router.get("/transactions/{user_id}" , status_code=200)
 async def read_transactions(user_id: int, db: Session = Depends(get_db)):
-    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+    transactions = (
+        db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+    )
     return {"data": transactions}, status.HTTP_200_OK
 
 
@@ -95,7 +97,9 @@ async def move_funds(
 
     # check if user has enough funds to move funds
     if check_account_balance < transaction_value:
-        return {"error": "Not enough funds to move. Transaction cancelled."}, status.HTTP_400_BAD_REQUEST
+        return {
+            "error": "Not enough funds to move. Transaction cancelled."
+        }, status.HTTP_400_BAD_REQUEST
 
     # debit transaction
     debit_transaction = models.Transaction(
@@ -125,3 +129,4 @@ async def move_funds(
     return {
         "Message": "Funds moved successfully",
     }, status.HTTP_201_CREATED
+    

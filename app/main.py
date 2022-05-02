@@ -6,6 +6,7 @@ from .models import Base
 from .database import engine
 from .routers import users, transactions, suggestions
 
+
 # create the tables in the database 
 # if they are not already created
 Base.metadata.create_all(bind=engine)
@@ -23,4 +24,6 @@ app.include_router(suggestions.router, prefix="/suggestions", tags=["suggestions
 # create the root route
 @app.get("/")
 def read_root():
-    return {f"Welcome to Personal Finance API": "Get our app at {app_download}"}, status.HTTP_200_OK
+    return {
+        f"Welcome to Personal Finance API": "Get our app at {app_download}"
+    }, status.HTTP_200_OK
