@@ -13,6 +13,14 @@ class UserCreate(UserBase):
         orm_mode = True
 
 
+class UserUpdateEmail(BaseModel):
+    email: EmailStr
+    password: str
+
+    class Config:
+        orm_mode = True
+
+
 class UserUpdatePassword(BaseModel):
     password: str
     new_password: str
@@ -32,6 +40,18 @@ class TransactionBase(BaseModel):
 
 
 class TransactionCreate(TransactionBase):
+    class Config:
+        orm_mode = True
+
+
+class TransactionUpdate(BaseModel):
+    transaction_name: str
+    transaction_category: str
+    transaction_type: str
+    transaction_value: float
+    transaction_date: date
+    account_type: str
+
     class Config:
         orm_mode = True
 

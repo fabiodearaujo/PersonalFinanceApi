@@ -8,7 +8,7 @@ router = APIRouter()
 
 
 # route to return all transactions from a user
-@router.get("/transactions/{user_id}", status_code=200)
+@router.get("/{user_id}", status_code=200)
 async def read_transactions(user_id: int, db: Session = Depends(get_db)):
     transactions = (
         db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
@@ -17,7 +17,7 @@ async def read_transactions(user_id: int, db: Session = Depends(get_db)):
 
 
 # route to add a transaction
-@router.post("/transactions", status_code=201)
+@router.post("/", status_code=201)
 async def create_transaction(
     transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
@@ -44,6 +44,29 @@ async def create_transaction(
         .first()
     )
     return {"data": transaction}, status.HTTP_201_CREATED
+
+
+# route to edit a transaction
+@router.put("/{transaction_id}", status_code=200)
+async def edit_transaction(
+    transaction_id: int,
+    transaction: schemas.TransactionUpdate,
+    db: Session = Depends(get_db),
+):
+    existing_transaction = (
+        db.query(models.Transaction)
+        .filter(models.Transaction.transaction_id == transaction_id)
+        .first()
+    )
+    if existing_transaction is None:
+        return {
+            "error": "There is no transaction with that id"
+        }, status.HTTP_404_NOT_FOUND
+    existing_transaction.transaction_name = transaction.transaction_name
+    existing_transaction.transaction_value = transaction.transaction_value
+    existing_transaction.transaction_date = transaction.transaction_date
+    db.commit()
+    return {"data": existing_transaction}, status.HTTP_200_OK
 
 
 # route to move funds from one account to another

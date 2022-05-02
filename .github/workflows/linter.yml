@@ -6,9 +6,9 @@ name: CI + CD pipeline with Super Linter
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 # Define some jobs that should run
