@@ -2,7 +2,7 @@
 from app import models, schemas
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
-from requests import Session
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
