@@ -4,7 +4,7 @@ from fastapi import FastAPI, status
 
 from .database import engine
 from .models import Base
-from .routers import users, transactions, suggestions
+from .routers import suggestions, transactions, users
 
 # create the tables in the database
 # if they are not already created
