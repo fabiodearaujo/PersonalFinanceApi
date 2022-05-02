@@ -8,14 +8,14 @@ router = APIRouter()
 
 
 # route to return all suggestions
-@router.get("/suggestions")
+@router.get("/")
 async def read_suggestions(db: Session = Depends(get_db)):
     suggestions = db.query(models.Suggestion).all()
     return {"data": suggestions}, status.HTTP_200_OK
 
 
 # route to add a suggestion
-@router.post("/suggestions", status_code=201)
+@router.post("/", status_code=201)
 async def create_suggestion(
     suggestion: schemas.SuggestionCreate,
     db: Session = Depends(get_db),

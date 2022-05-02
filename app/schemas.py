@@ -44,6 +44,18 @@ class TransactionCreate(TransactionBase):
         orm_mode = True
 
 
+class TransactionUpdate(BaseModel):
+    transaction_name: str
+    transaction_category: str
+    transaction_type: str
+    transaction_value: float
+    transaction_date: date
+    account_type: str
+
+    class Config:
+        orm_mode = True
+
+
 class SuggestionBase(BaseModel):
     category: str
     description: str
