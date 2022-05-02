@@ -75,9 +75,7 @@ async def delete_suggestion(
         .first()
     )
     if confirm.lower() == 'n':
-        return {
-            "error": "Deletion Canceled."
-        }, status.HTTP_400_BAD_REQUEST
+        return {"error": "Deletion Canceled."}, status.HTTP_400_BAD_REQUEST
     db.delete(suggestion_to_delete)
     db.commit()
     return {"data": "Suggestion deleted"}, status.HTTP_200_OK

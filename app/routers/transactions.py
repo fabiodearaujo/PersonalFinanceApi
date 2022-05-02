@@ -18,9 +18,7 @@ async def get_all_transactions(user_id: int, db: Session = Depends(get_db)):
 
 # route to return one transaction
 @router.get("/get_one/{transaction_id}", status_code=200)
-async def get_one_transaction(
-    transaction_id: int, db: Session = Depends(get_db)
-):
+async def get_one_transaction(transaction_id: int, db: Session = Depends(get_db)):
     transaction = (
         db.query(models.Transaction)
         .filter(models.Transaction.transaction_id == transaction_id)
