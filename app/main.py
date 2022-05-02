@@ -14,7 +14,11 @@ Base.metadata.create_all(bind=engine)
 app_download = config("APP_URL")
 
 # create a FastAPI app instance
-app = FastAPI()
+app = FastAPI(
+    title="Personal Finance API",
+    description="This API is used to manage personal finance throught the APP.",
+    version="0.1.0",
+)
 
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(transactions.router, prefix="/transactions", tags=["transactions"])

@@ -31,12 +31,18 @@ class UserUpdatePassword(BaseModel):
 
 class TransactionBase(BaseModel):
     user_id: int
+    transaction_id: int
     transaction_name: str
     transaction_category: str
     transaction_type: str
     transaction_value: float
     transaction_date: date
     account_type: str
+
+
+class TransactionReturnOne(TransactionBase):
+    class Config:
+        orm_mode = True
 
 
 class TransactionCreate(TransactionBase):
@@ -62,5 +68,13 @@ class SuggestionBase(BaseModel):
 
 
 class SuggestionCreate(SuggestionBase):
+    class Config:
+        orm_mode = True
+
+
+class SuggestionUpdate(BaseModel):
+    category: str
+    description: str
+
     class Config:
         orm_mode = True
