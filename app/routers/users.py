@@ -41,7 +41,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 # route to update a user details
 @router.put("/users/{user_id}", status_code=200)
 async def update_user_email(
-    user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)
+    user_id: int, user: schemas.UserUpdateEmail, db: Session = Depends(get_db)
 ):
 
     # check if the user already exists
@@ -56,6 +56,7 @@ async def update_user_email(
 
     # update the user email information
     user.email = user.email.lower()
+
 
     # verify if password is correct
     verify_password = utils.verify_context(user.password, check_user.password)

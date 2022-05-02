@@ -13,6 +13,14 @@ class UserCreate(UserBase):
         orm_mode = True
 
 
+class UserUpdateEmail(BaseModel):
+    email: EmailStr
+    password: str
+
+    class Config:
+        orm_mode = True
+
+
 class UserUpdatePassword(BaseModel):
     password: str
     new_password: str
