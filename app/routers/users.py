@@ -9,8 +9,8 @@ router = APIRouter()
 
 
 # route to return one user
-@router.get("/{email}", status_code=200)
-async def read_user(email: EmailStr, db: Session = Depends(get_db)):
+@router.get("/get_one/{email}", status_code=200)
+async def get_one_user(email: EmailStr, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == email.lower()).first()
     if user is None:
         return {"error": "User not found"}, status.HTTP_404_NOT_FOUND
@@ -18,7 +18,7 @@ async def read_user(email: EmailStr, db: Session = Depends(get_db)):
 
 
 # route to add a user
-@router.post("/users", status_code=201)
+@router.post("/create", status_code=201)
 async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     # check if the user already exists
@@ -39,7 +39,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 # route to update a user details
-@router.put("/{user_id}", status_code=200)
+@router.put("/email/{user_id}", status_code=200)
 async def update_user_email(
     user_id: int, user: schemas.UserUpdateEmail, db: Session = Depends(get_db)
 ):
@@ -92,7 +92,7 @@ async def update_user_password(
 
 
 # route to delete a user
-@router.delete("/{user_id}", status_code=200)
+@router.delete("/delete/{user_id}", status_code=200)
 async def delete_user(user_id: int, confirm: str, db: Session = Depends(get_db)):
     # find the user to be deleted
     user = db.query(models.User).filter(models.User.user_id == user_id).first()
