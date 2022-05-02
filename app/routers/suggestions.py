@@ -74,7 +74,7 @@ async def delete_suggestion(
         .filter(models.Suggestion.suggestion_id == suggestion_id)
         .first()
     )
-    if confirm.lower() == 'n':
+    if confirm.lower() == "n":
         return {"error": "Deletion Canceled."}, status.HTTP_400_BAD_REQUEST
     db.delete(suggestion_to_delete)
     db.commit()
