@@ -2,9 +2,6 @@ from pydantic import BaseModel, EmailStr
 from datetime import date
 from typing import Optional
 
-from uvicorn import Config
-
-
 class UserBase(BaseModel):
     email: EmailStr
     password: str
@@ -23,6 +20,13 @@ class UserUpdate(UserBase):
     class Config:
         orm_mode = True
 
+
+class UserUpdatePassword(BaseModel):
+    password: str
+    new_password: str
+
+    class Config:
+        orm_mode = True
 
 class TransactionBase(BaseModel):
     user_id: int
