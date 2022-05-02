@@ -59,7 +59,9 @@ async def edit_transaction(
         .first()
     )
     if existing_transaction is None:
-        return {"error": "There is no transaction with that id"}, status.HTTP_404_NOT_FOUND
+        return {
+            "error": "There is no transaction with that id"
+        }, status.HTTP_404_NOT_FOUND
     existing_transaction.transaction_name = transaction.transaction_name
     existing_transaction.transaction_value = transaction.transaction_value
     existing_transaction.transaction_date = transaction.transaction_date
