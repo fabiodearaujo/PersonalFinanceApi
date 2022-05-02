@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr
 from datetime import date
 from typing import Optional
+
+from pydantic import BaseModel, EmailStr
 
 
 class UserBase(BaseModel):
@@ -9,12 +10,11 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    
     class Config:
         orm_mode = True
 
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
 
@@ -41,12 +41,11 @@ class TransactionBase(BaseModel):
 
 
 class TransactionCreate(TransactionBase):
-   
     class Config:
         orm_mode = True
 
 
-class TransactionUpdate(TransactionBase):
+class TransactionUpdate(BaseModel):
     transaction_name: Optional[str] = None
     transaction_category: Optional[str] = None
     transaction_type: Optional[str] = None
@@ -64,12 +63,11 @@ class SuggestionBase(BaseModel):
 
 
 class SuggestionCreate(SuggestionBase):
-   
     class Config:
         orm_mode = True
 
 
-class SuggestionUpdate(SuggestionBase):
+class SuggestionUpdate(BaseModel):
     category: Optional[str] = None
     description: Optional[str] = None
 

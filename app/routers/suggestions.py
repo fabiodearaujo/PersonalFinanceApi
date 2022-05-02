@@ -1,11 +1,11 @@
 # necessary imports
+from app import models, schemas
+from app.database import get_db
 from fastapi import APIRouter, Depends, status
 from requests import Session
 
-from app import models, schemas
-from app.database import get_db
-
 router = APIRouter()
+
 
 # route to return all suggestions
 @router.get("/suggestions")

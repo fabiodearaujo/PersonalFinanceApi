@@ -1,12 +1,12 @@
 # necessary imports
+from app import models, schemas, utils
+from app.database import get_db
 from fastapi import APIRouter, Depends, status
 from pydantic import EmailStr
 from requests import Session
 
-from app import models, schemas, utils
-from app.database import get_db
-
 router = APIRouter()
+
 
 # route to return one user
 @router.get("/users/{email}", status_code=200)
@@ -40,12 +40,13 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # route to update a user details
 @router.put("/users/{user_id}", status_code=200)
-async def update_user_email(user_id: int, user: schemas.UserUpdate, db: Session = Depends(get_db)):
+async def update_user_email(
+    user_id: int, user: schemas.UserUpdate, db: Session = Depends(get_db)
+):
 
     # check if the user already exists
-    check_user_email = (db.query(models.User)
-        .filter(models.User.email == user.email.lower())
-        .first()
+    check_user_email = (
+        db.query(models.User).filter(models.User.email == user.email.lower()).first()
     )
     if check_user_email:
         return {"error": "User already exists"}, status.HTTP_400_BAD_REQUEST
@@ -69,7 +70,9 @@ async def update_user_email(user_id: int, user: schemas.UserUpdate, db: Session 
 
 # route to update a user password
 @router.put("/users/password/{user_id}", status_code=200)
-async def update_user_password(user_id: int, user: schemas.UserUpdatePassword, db: Session = Depends(get_db)):
+async def update_user_password(
+    user_id: int, user: schemas.UserUpdatePassword, db: Session = Depends(get_db)
+):
 
     # return user details
     check_user = db.query(models.User).filter(models.User.user_id == user_id).first()
@@ -94,7 +97,7 @@ async def delete_user(user_id: int, confirm: str, db: Session = Depends(get_db))
     # find the user to be deleted
     user = db.query(models.User).filter(models.User.user_id == user_id).first()
 
-    #check confirmation
+    # check confirmation
     if confirm.lower() == "n":
         return {"error": "User not deleted."}, status.HTTP_400_BAD_REQUEST
 
