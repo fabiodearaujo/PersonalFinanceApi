@@ -1,13 +1,16 @@
 # necessary imports
-from requests import Session
-from ..database import get_db
-from .. import models, schemas
 from fastapi import APIRouter, Depends, status
+from requests import Session
+
+from app import models, schemas
+from app.database import get_db
+
 
 router = APIRouter()
 
+
 # route to return all transactions from a user
-@router.get("/transactions/{user_id}" , status_code=200)
+@router.get("/transactions/{user_id}", status_code=200)
 async def read_transactions(user_id: int, db: Session = Depends(get_db)):
     transactions = (
         db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
@@ -129,4 +132,3 @@ async def move_funds(
     return {
         "Message": "Funds moved successfully",
     }, status.HTTP_201_CREATED
-    

@@ -1,8 +1,9 @@
 # necessary imports
-from requests import Session
-from ..database import get_db
-from .. import models, schemas
 from fastapi import APIRouter, Depends, status
+from requests import Session
+
+from app import models, schemas
+from app.database import get_db
 
 router = APIRouter()
 

@@ -2,9 +2,11 @@
 from decouple import config
 from fastapi import FastAPI, status
 
-from .models import Base
 from .database import engine
+from .models import Base
+
 from .routers import users, transactions, suggestions
+
 
 
 # create the tables in the database 
