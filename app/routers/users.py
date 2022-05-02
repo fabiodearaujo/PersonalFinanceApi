@@ -57,7 +57,6 @@ async def update_user_email(
     # update the user email information
     user.email = user.email.lower()
 
-
     # verify if password is correct
     verify_password = utils.verify_context(user.password, check_user.password)
     if not verify_password:
