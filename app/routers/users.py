@@ -1,5 +1,5 @@
 # necessary imports
-from app import models, schemas, utils
+from app import models, oauth2, schemas, utils
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
 from pydantic import EmailStr
@@ -41,9 +41,10 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 # route to update a user details
 @router.put("/email/{user_id}", status_code=200)
 async def update_user_email(
-    user_id: int, user: schemas.UserUpdateEmail, db: Session = Depends(get_db)
+    user_id: int, user: schemas.UserUpdateEmail,
+    db: Session = Depends(get_db), user_auth: int = Depends(oauth2.get_current_user)
 ):
-
+    print(user_auth)
     # check if the user already exists
     check_user_email = (
         db.query(models.User).filter(models.User.email == user.email.lower()).first()
