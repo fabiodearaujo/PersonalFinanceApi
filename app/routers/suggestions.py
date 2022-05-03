@@ -1,11 +1,14 @@
 # necessary imports
-from app import models, schemas
+from app import models, oauth2, schemas
+from decouple import config
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 router = APIRouter()
 
+# set the environment variable for special access
+TOKEN_SPECIAL = config("TOKEN_SPECIAL")
 
 # route to return all suggestions
 @router.get("/")
@@ -19,7 +22,11 @@ async def get_all_suggestions(db: Session = Depends(get_db)):
 async def create_suggestion(
     suggestion: schemas.SuggestionCreate,
     db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
 ):
+# check if user has special permission to delete
+    if TOKEN_SPECIAL != user_auth.email:
+        return {"Message": "Unauthorized access."}, status.HTTP_401_UNAUTHORIZED
     new_suggestion = models.Suggestion(**suggestion.dict())
     db.add(new_suggestion)
     db.commit()
@@ -51,7 +58,11 @@ async def update_suggestion(
     suggestion_id: int,
     suggestion: schemas.SuggestionUpdate,
     db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
 ):
+    # check if user has special permission to delete
+    if TOKEN_SPECIAL != user_auth.email:
+        return {"Message": "Unauthorized access."}, status.HTTP_401_UNAUTHORIZED
     suggestion_to_update = (
         db.query(models.Suggestion)
         .filter(models.Suggestion.suggestion_id == suggestion_id)
@@ -68,7 +79,11 @@ async def delete_suggestion(
     suggestion_id: int,
     confirm: str,
     db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
 ):
+    # check if user has special permission to delete
+    if TOKEN_SPECIAL != user_auth.email:
+        return {"Message": "Unauthorized access."}, status.HTTP_401_UNAUTHORIZED
     suggestion_to_delete = (
         db.query(models.Suggestion)
         .filter(models.Suggestion.suggestion_id == suggestion_id)

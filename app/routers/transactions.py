@@ -1,5 +1,5 @@
 # necessary imports
-from app import models, schemas
+from app import models, oauth2, schemas
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
@@ -9,21 +9,36 @@ router = APIRouter()
 
 # route to return all transactions from a user
 @router.get("/{user_id}", status_code=200)
-async def get_all_transactions(user_id: int, db: Session = Depends(get_db)):
+async def get_all_transactions(
+    user_id: int, db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
+):
     transactions = (
         db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
     )
+
+    # verify if it is the correct user
+    if transactions.user_id != user_auth.id:
+        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
     return {"data": transactions}, status.HTTP_200_OK
 
 
 # route to return one transaction
 @router.get("/get_one/{transaction_id}", status_code=200)
-async def get_one_transaction(transaction_id: int, db: Session = Depends(get_db)):
+async def get_one_transaction(
+    transaction_id: int,
+    db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
+):
     transaction = (
         db.query(models.Transaction)
         .filter(models.Transaction.transaction_id == transaction_id)
         .first()
     )
+
+    # verify if it is the correct user
+    if transaction.user_id != user_auth.id:
+        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
     return {"data": transaction}, status.HTTP_200_OK
 
 
@@ -32,6 +47,7 @@ async def get_one_transaction(transaction_id: int, db: Session = Depends(get_db)
 async def create_transaction(
     transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
 ):
     existing_user = (
         db.query(models.User)
@@ -40,6 +56,10 @@ async def create_transaction(
         )
         .first()
     )
+
+    # verify if it is the correct user
+    if transaction.user_id != user_auth.id:
+        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
     if existing_user is None:
         return {"error": "There is no user with that id"}, status.HTTP_404_NOT_FOUND
     new_transaction = models.Transaction(**transaction.dict())
@@ -63,12 +83,17 @@ async def edit_transaction(
     transaction_id: int,
     transaction: schemas.TransactionUpdate,
     db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
 ):
     transaction_to_edit = (
         db.query(models.Transaction)
         .filter(models.Transaction.transaction_id == transaction_id)
         .first()
     )
+
+    # verify if it is the correct user
+    if transaction.user_id != user_auth.id:
+        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
     if transaction_to_edit.transaction_category == "transfer":
         return {
             "error": "You cannot edit a transfer transaction"
@@ -88,12 +113,17 @@ async def delete_transaction(
     transaction_id: int,
     confirm: str,
     db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
 ):
     existing_transaction = (
         db.query(models.Transaction)
         .filter(models.Transaction.transaction_id == transaction_id)
         .first()
     )
+
+    # verify if it is the correct user
+    if existing_transaction.user_id != user_auth.id:
+        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
     if existing_transaction.transaction_category == "transfer":
         return {
             "error": "You cannot delete a transfer transaction"
@@ -113,7 +143,12 @@ async def move_funds(
     transaction_date: str,
     account_type: str,
     db: Session = Depends(get_db),
+    user_auth: int = Depends(oauth2.get_current_user),
 ):
+    # verify if it is the correct user
+    if user_id != user_auth.id:
+        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
+
     # defining the direction of the transaction
     if account_type == "main":
         account_debit = "savings"

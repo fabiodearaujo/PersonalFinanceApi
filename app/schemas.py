@@ -32,7 +32,6 @@ class UserUpdatePassword(BaseModel):
 
 class TransactionBase(BaseModel):
     user_id: int
-    transaction_id: int
     transaction_name: str
     transaction_category: str
     transaction_type: str
@@ -88,3 +87,4 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+    email: Optional[str] = None
