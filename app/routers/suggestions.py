@@ -14,7 +14,7 @@ TOKEN_SPECIAL = config("TOKEN_SPECIAL")
 # route to return all suggestions
 @router.get("/")
 def get_all_suggestions(
-    user_auth: dict() = Depends(oauth2.get_current_user),
+    user_auth: str = Depends(oauth2.get_current_user),
     db: Session = Depends(get_db),
 ):
     print(f"user aut : {user_auth.user_id}")
@@ -32,7 +32,7 @@ def get_all_suggestions(
 def create_suggestion(
     suggestion: schemas.SuggestionCreate,
     db: Session = Depends(get_db),
-    user_auth: dict() = Depends(oauth2.get_current_user),
+    user_auth: str = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access
@@ -53,7 +53,7 @@ def create_suggestion(
 def get_one_suggestion(
     suggestion: schemas.SuggestionGetOne,
     db: Session = Depends(get_db),
-    user_auth: dict() = Depends(oauth2.get_current_user),
+    user_auth: str = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access
@@ -74,7 +74,7 @@ def get_one_suggestion(
 def update_suggestion(
     suggestion_update: schemas.SuggestionUpdate,
     db: Session = Depends(get_db),
-    user_auth: dict() = Depends(oauth2.get_current_user),
+    user_auth: str = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access
@@ -100,7 +100,7 @@ def update_suggestion(
 def delete_suggestion(
     suggestion_info: schemas.SuggestionDelete,
     db: Session = Depends(get_db),
-    user_auth: dict() = Depends(oauth2.get_current_user),
+    user_auth: str = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access
