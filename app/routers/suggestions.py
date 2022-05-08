@@ -18,8 +18,7 @@ async def get_all_suggestions(
     db: Session = Depends(get_db),
 ):
     # verify if user has special access
-    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
-    if TOKEN_SPECIAL != user.email:
+    if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only an Admin can execute this query."
         }, status.HTTP_401_UNAUTHORIZED
@@ -35,8 +34,7 @@ async def create_suggestion(
     user_auth: int = Depends(oauth2.get_current_user),
 ):
     # verify if user has special access
-    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
-    if TOKEN_SPECIAL != user.email:
+    if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only an Admin can create new suggestions."
         }, status.HTTP_401_UNAUTHORIZED
@@ -55,9 +53,8 @@ async def get_one_suggestion(
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
-    # verify if user has special access
-    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
-    if TOKEN_SPECIAL != user.email:
+   # verify if user has special access
+    if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only an Admin can execute this query."
         }, status.HTTP_401_UNAUTHORIZED
@@ -77,8 +74,7 @@ async def update_suggestion(
     user_auth: int = Depends(oauth2.get_current_user),
 ):
    # verify if user has special access
-    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
-    if TOKEN_SPECIAL != user.email:
+    if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only Admin can update suggestions."
         }, status.HTTP_401_UNAUTHORIZED
@@ -103,8 +99,7 @@ async def delete_suggestion(
     user_auth: int = Depends(oauth2.get_current_user),
 ):
    # verify if user has special access
-    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
-    if TOKEN_SPECIAL != user.email:
+    if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only an Admin can delete suggestions."
         }, status.HTTP_401_UNAUTHORIZED
@@ -118,3 +113,11 @@ async def delete_suggestion(
     db.delete(suggestion_to_delete)
     db.commit()
     return {"data": "Suggestion deleted"}, status.HTTP_200_OK
+
+
+def verify_user_access(user_id: int, db: Session = Depends(get_db)):
+    user = (
+        db.query(models.User).filter(models.User.user_id == user_id).first()
+    )
+    if TOKEN_SPECIAL == user.email:
+        return True
