@@ -30,8 +30,8 @@ def login(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials"
         )
 
-    # create a token
+    # create a token for the user
     access_token = oauth2.create_access_token(data={"user_id": user.user_id})
 
-    # return token
+    # return the corresponding token
     return {"access_token": access_token, "token_type": "bearer"}

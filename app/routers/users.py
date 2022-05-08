@@ -98,7 +98,7 @@ async def update_user_password(
     # verify if password is correct
     verify_password = utils.verify_context(user.password, check_user.password)
     if not verify_password:
-        return {"error": "Incorrect credentials."}, status.HTTP_400_BAD_REQUEST
+        return {"error": "Credentials are incorrect."}, status.HTTP_400_BAD_REQUEST
 
     # hash the new password
     hashed_password = utils.hash_context(user.new_password)
@@ -122,7 +122,7 @@ async def delete_user(
     # verify if password is correct
     verify_password = utils.verify_context(user.password, user_to_delete.password)
     if not verify_password:
-        return {"error": "Incorrect credentials."}, status.HTTP_400_BAD_REQUEST
+        return {"error": "Credentials does not match."}, status.HTTP_400_BAD_REQUEST
 
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:

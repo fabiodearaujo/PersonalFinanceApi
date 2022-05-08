@@ -20,7 +20,9 @@ def get_all_transactions(
     )
     # verify if it is the correct user
     if transactions[0].user_id != user_auth.user_id:
-        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
+        return {
+            "error": "You are not authorized to access this resource."
+        }, status.HTTP_401_UNAUTHORIZED
     return {"data": transactions}, status.HTTP_200_OK
 
 
@@ -39,7 +41,9 @@ async def get_one_transaction(
 
     # verify if it is the correct user
     if transaction_to_get.user_id != user_auth.user_id:
-        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
+        return {
+            "error": "You are not authorized to return this transaction."
+        }, status.HTTP_401_UNAUTHORIZED
     return {"data": transaction_to_get}, status.HTTP_200_OK
 
 
@@ -58,7 +62,9 @@ async def create_transaction(
 
     # verify if it is the correct user
     if transaction.user_id != int(user_auth.user_id):
-        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
+        return {
+            "error": "Not possible to create transaction to another user."
+        }, status.HTTP_401_UNAUTHORIZED
     if existing_user is None:
         return {"error": "There is no user with that id"}, status.HTTP_404_NOT_FOUND
     new_transaction = models.Transaction(**transaction.dict())
@@ -83,7 +89,9 @@ async def edit_transaction(
 
     # verify if it is the correct user
     if transaction_to_edit.user_id != user_auth.user_id:
-        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
+        return {
+            "error": "You cannot edit a transaction from another user."
+        }, status.HTTP_401_UNAUTHORIZED
     if transaction_to_edit.transaction_category == "transfer":
         return {
             "error": "You cannot edit a transfer transaction"
@@ -112,7 +120,9 @@ async def delete_transaction(
 
     # verify if it is the correct user
     if existing_transaction.user_id != user_auth.user_id:
-        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
+        return {
+            "error": "You can delete only your own transactions."
+        }, status.HTTP_401_UNAUTHORIZED
     if existing_transaction.transaction_category == "transfer":
         return {
             "error": "You cannot delete a transfer transaction"
@@ -133,7 +143,9 @@ async def move_funds(
 ):
     # verify if it is the correct user
     if move_funds.user_id != user_auth.user_id:
-        return {"error": "Unauthorized Access."}, status.HTTP_401_UNAUTHORIZED
+        return {
+            "error": "You cannot move funds of another user."
+        }, status.HTTP_401_UNAUTHORIZED
 
     # defining the direction of the transaction
     if move_funds.account_type == "main":
