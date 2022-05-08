@@ -1,9 +1,9 @@
 # necessary imports
-from pyparsing import DictType
 from app import models, oauth2, schemas
 from app.database import get_db
 from decouple import config
 from fastapi import APIRouter, Depends, status
+from pyparsing import DictType
 from sqlalchemy.orm import Session
 
 router = APIRouter()
