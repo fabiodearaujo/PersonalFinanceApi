@@ -2,7 +2,6 @@
 from app import models, oauth2, schemas, utils
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
-from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -63,7 +62,9 @@ async def update_user_email(
         return {"error": "User already exists."}, status.HTTP_400_BAD_REQUEST
 
     # return user details
-    check_user = db.query(models.User).filter(models.User.user_id == user.user_id).first()
+    check_user = (
+        db.query(models.User).filter(models.User.user_id == user.user_id).first()
+    )
 
     # update the user email information
     user.email = user.email.lower()
@@ -93,7 +94,9 @@ async def update_user_password(
         }, status.HTTP_401_UNAUTHORIZED
 
     # return user details
-    check_user = db.query(models.User).filter(models.User.user_id == user.user_id).first()
+    check_user = (
+        db.query(models.User).filter(models.User.user_id == user.user_id).first()
+    )
 
     # verify if password is correct
     verify_password = utils.verify_context(user.password, check_user.password)
@@ -117,7 +120,9 @@ async def delete_user(
     user_auth: int = Depends(oauth2.get_current_user),
 ):
     # find the user to be deleted
-    user_to_delete = db.query(models.User).filter(models.User.user_id == user.user_id).first()
+    user_to_delete = (
+        db.query(models.User).filter(models.User.user_id == user.user_id).first()
+    )
 
     # verify if password is correct
     verify_password = utils.verify_context(user.password, user_to_delete.password)
@@ -132,7 +137,9 @@ async def delete_user(
 
     # check confirmation
     if user.confirm != True:
-        return {"error": "User not deleted. Not Confirmed."}, status.HTTP_400_BAD_REQUEST
+        return {
+            "error": "User not deleted. Not Confirmed."
+        }, status.HTTP_400_BAD_REQUEST
 
     # delete the user
     db.delete(user_to_delete)

@@ -17,13 +17,14 @@ async def get_all_suggestions(
     user_auth: int = Depends(oauth2.get_current_user),
     db: Session = Depends(get_db),
 ):
+
     # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only an Admin can execute this query."
         }, status.HTTP_401_UNAUTHORIZED
-    suggestions = db.query(models.Suggestion).all()
-    return {"data": suggestions}, status.HTTP_200_OK
+    suggestions = await db.query(models.Suggestion).all()
+    return await {"data": suggestions}, status.HTTP_200_OK
 
 
 # route to add a suggestion
@@ -33,6 +34,7 @@ async def create_suggestion(
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
+
     # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
@@ -53,6 +55,7 @@ async def get_one_suggestion(
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
+
    # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
@@ -73,12 +76,13 @@ async def update_suggestion(
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
+
    # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only Admin can update suggestions."
         }, status.HTTP_401_UNAUTHORIZED
-    
+
     # get the suggestion to update
     suggestion_to_update = (
         db.query(models.Suggestion)
@@ -98,6 +102,7 @@ async def delete_suggestion(
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
+
    # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
@@ -115,9 +120,8 @@ async def delete_suggestion(
     return {"data": "Suggestion deleted"}, status.HTTP_200_OK
 
 
+# Function to check if user has special access
 def verify_user_access(user_id: int, db: Session = Depends(get_db)):
-    user = (
-        db.query(models.User).filter(models.User.user_id == user_id).first()
-    )
+    user = (db.query(models.User).filter(models.User.user_id == user_id).first())
     if TOKEN_SPECIAL == user.email:
         return True

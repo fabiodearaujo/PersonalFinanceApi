@@ -56,7 +56,9 @@ async def create_transaction(
 ):
     existing_user = (
         db.query(models.User)
-        .filter(models.User.user_id == transaction.user_id,)
+        .filter(
+            models.User.user_id == transaction.user_id,
+        )
         .first()
     )
 
@@ -70,7 +72,7 @@ async def create_transaction(
     new_transaction = models.Transaction(**transaction.dict())
     db.add(new_transaction)
     db.commit()
-    
+
     return {"Message": "Transaction created successfully."}, status.HTTP_201_CREATED
 
 
