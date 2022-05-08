@@ -1,7 +1,6 @@
 # necessary imports
 from decouple import config
 from fastapi import FastAPI, status
-from httplib2 import Authentication
 
 from .database import engine
 from .models import Base

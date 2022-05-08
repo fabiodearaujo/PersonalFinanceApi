@@ -8,16 +8,17 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-# route to return one user
-@router.get("/get_one/{email}", status_code=200)
-async def get_one_user(
-    email: EmailStr, db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
-):
-    user = db.query(models.User).filter(models.User.email == email.lower()).first()
-    if user is None:
-        return {"error": "User not found"}, status.HTTP_404_NOT_FOUND
-    return {"Message": "User is already registered"}, status.HTTP_200_OK
+# # route to return one user
+# @router.get("/get_one/{email}", status_code=200)
+# async def get_one_user(
+#     email: EmailStr,
+#     db: Session = Depends(get_db),
+#     user_auth: int = Depends(oauth2.get_current_user),
+# ):
+#     user = db.query(models.User).filter(models.User.email == email.lower()).first()
+#     if user is None:
+#         return {"error": "User not found"}, status.HTTP_404_NOT_FOUND
+#     return {"Message": "User is already registered"}, status.HTTP_200_OK
 
 
 # route to add a user
@@ -29,7 +30,7 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db.query(models.User).filter(models.User.email == user.email.lower()).first()
     )
     if check_user:
-        return {"error": "User already exists"}, status.HTTP_400_BAD_REQUEST
+        return {"error": "User already exists."}, status.HTTP_400_BAD_REQUEST
 
     # hash the password
     hashed_password = utils.hash_context(user.password)
@@ -38,30 +39,31 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     new_user = models.User(email=user.email.lower(), password=hashed_password)
     db.add(new_user)
     db.commit()
-    return {"Message": "User created successfully"}, status.HTTP_201_CREATED
+    return {"Message": "User created successfully."}, status.HTTP_201_CREATED
 
 
 # route to update a user details
-@router.put("/email/{user_id}", status_code=200)
+@router.put("/email", status_code=200)
 async def update_user_email(
-    user_id: int, user: schemas.UserUpdateEmail,
+    user: schemas.UserUpdateEmail,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
-    if user.user_id != user_auth.id:
-        return {"error": "You are not authorized to update this user"}, status.HTTP_401_UNAUTHORIZED
-
+    if user.user_id != user_auth.user_id:
+        return {
+            "error": "You are not authorized to update this user."
+        }, status.HTTP_401_UNAUTHORIZED
 
     # check if the user already exists
     check_user_email = (
         db.query(models.User).filter(models.User.email == user.email.lower()).first()
     )
     if check_user_email:
-        return {"error": "User already exists"}, status.HTTP_400_BAD_REQUEST
+        return {"error": "User already exists."}, status.HTTP_400_BAD_REQUEST
 
     # return user details
-    check_user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    check_user = db.query(models.User).filter(models.User.user_id == user.user_id).first()
 
     # update the user email information
     user.email = user.email.lower()
@@ -69,32 +71,34 @@ async def update_user_email(
     # verify if password is correct
     verify_password = utils.verify_context(user.password, check_user.password)
     if not verify_password:
-        return {"error": "Incorrect password"}, status.HTTP_400_BAD_REQUEST
+        return {"error": "Incorrect credentials."}, status.HTTP_400_BAD_REQUEST
 
     # update the user email
     check_user.email = user.email
     db.commit()
-    return {"Message": "User updated successfully"}, status.HTTP_200_OK
+    return {"Message": "User updated successfully."}, status.HTTP_200_OK
 
 
 # route to update a user password
-@router.put("/password/{user_id}", status_code=200)
+@router.put("/password", status_code=200)
 async def update_user_password(
-    user_id: int, user: schemas.UserUpdatePassword,
+    user: schemas.UserUpdatePassword,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
-    if user_id != user_auth.id:
-        return {"error": "You are not authorized to update this user"}, status.HTTP_401_UNAUTHORIZED
+    if user.user_id != user_auth.user_id:
+        return {
+            "error": "You are not authorized to update this user."
+        }, status.HTTP_401_UNAUTHORIZED
 
     # return user details
-    check_user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    check_user = db.query(models.User).filter(models.User.user_id == user.user_id).first()
 
     # verify if password is correct
     verify_password = utils.verify_context(user.password, check_user.password)
     if not verify_password:
-        return {"error": "Incorrect password"}, status.HTTP_400_BAD_REQUEST
+        return {"error": "Incorrect credentials."}, status.HTTP_400_BAD_REQUEST
 
     # hash the new password
     hashed_password = utils.hash_context(user.new_password)
@@ -102,28 +106,35 @@ async def update_user_password(
     # update the user password
     check_user.password = hashed_password
     db.commit()
-    return {"Message": "User password updated successfully"}, status.HTTP_200_OK
+    return {"Message": "User password updated successfully."}, status.HTTP_200_OK
 
 
 # route to delete a user
-@router.delete("/delete/{user_id}", status_code=200)
+@router.delete("/delete", status_code=200)
 async def delete_user(
-    user_id: int, confirm: str,
+    user: schemas.UserDelete,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
     # find the user to be deleted
-    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    user_to_delete = db.query(models.User).filter(models.User.user_id == user.user_id).first()
+
+    # verify if password is correct
+    verify_password = utils.verify_context(user.password, user_to_delete.password)
+    if not verify_password:
+        return {"error": "Incorrect credentials."}, status.HTTP_400_BAD_REQUEST
 
     # verify if it is the correct user
-    if user.user_id != user_auth.id:
-        return {"error": "You are not authorized to delete this user"}, status.HTTP_401_UNAUTHORIZED
+    if user.user_id != user_auth.user_id:
+        return {
+            "error": "You are not authorized to delete this user."
+        }, status.HTTP_401_UNAUTHORIZED
 
     # check confirmation
-    if confirm.lower() == "n":
-        return {"error": "User not deleted."}, status.HTTP_400_BAD_REQUEST
+    if user.confirm != True:
+        return {"error": "User not deleted. Not Confirmed."}, status.HTTP_400_BAD_REQUEST
 
     # delete the user
-    db.delete(user)
+    db.delete(user_to_delete)
     db.commit()
-    return {"Message": "User deleted successfully"}, status.HTTP_200_OK
+    return {"Message": "User deleted successfully."}, status.HTTP_200_OK

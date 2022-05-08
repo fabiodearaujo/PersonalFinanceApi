@@ -1,5 +1,4 @@
 # necessary imports to setup the models
-from unicodedata import category
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
 
 from .database import Base
@@ -17,7 +16,12 @@ class User(Base):
 class Transaction(Base):
     __tablename__ = "transactions"
     transaction_id = Column(Integer, primary_key=True, nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.user_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     transaction_name = Column(String, nullable=False)
     transaction_category = Column(String, nullable=False)
     transaction_type = Column(String, nullable=False)
