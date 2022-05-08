@@ -11,7 +11,7 @@ router = APIRouter()
 @router.get("/", status_code=200)
 def get_all_transactions(
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
 
     print(f"user aut : {user_auth}")
@@ -36,7 +36,7 @@ def get_all_transactions(
 def get_one_transaction(
     transaction: schemas.TransactionGetOne,
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     transaction_to_get = (
         db.query(models.Transaction)
@@ -57,7 +57,7 @@ def get_one_transaction(
 def create_transaction(
     transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     existing_user = (
         db.query(models.User)
@@ -86,7 +86,7 @@ def create_transaction(
 def edit_transaction(
     transaction: schemas.TransactionUpdate,
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     transaction_to_edit = (
         db.query(models.Transaction)
@@ -117,7 +117,7 @@ def edit_transaction(
 def delete_transaction(
     transaction: schemas.TransactionDelete,
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     existing_transaction = (
         db.query(models.Transaction)
@@ -134,7 +134,7 @@ def delete_transaction(
         return {
             "error": "You cannot delete a transfer transaction"
         }, status.HTTP_400_BAD_REQUEST
-    if transaction.confirm != True:
+    if transaction.confirm is not True:
         return {"error": "Deletion canceled."}, status.HTTP_400_BAD_REQUEST
     db.delete(existing_transaction)
     db.commit()
@@ -146,7 +146,7 @@ def delete_transaction(
 def move_funds(
     move_funds: schemas.MoveFunds,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if move_funds.user_id != user_auth.user_id:

@@ -33,7 +33,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def update_user_email(
     user: schemas.UserUpdateEmail,
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -72,7 +72,7 @@ def update_user_email(
 def update_user_password(
     user: schemas.UserUpdatePassword,
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -104,7 +104,7 @@ def update_user_password(
 def delete_user(
     user: schemas.UserDelete,
     db: Session = Depends(get_db),
-    user_auth: dict = Depends(oauth2.get_current_user),
+    user_auth: dict() = Depends(oauth2.get_current_user),
 ):
     # find the user to be deleted
     user_to_delete = (
@@ -123,7 +123,7 @@ def delete_user(
         }, status.HTTP_401_UNAUTHORIZED
 
     # check confirmation
-    if user.confirm != True:
+    if user.confirm is not True:
         return {
             "error": "User not deleted. Not Confirmed."
         }, status.HTTP_400_BAD_REQUEST
