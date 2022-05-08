@@ -11,8 +11,13 @@ router = APIRouter()
 @router.get("/", status_code=200)
 def get_all_transactions(
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
+
+    print(f"user aut : {user_auth}")
+    print(type(user_auth))
+    print(f"user aut. user id : {user_auth.user_id}")
+    print(type(user_auth.user_id))
     transactions = (
         db.query(models.Transaction)
         .filter(models.Transaction.user_id == user_auth.user_id)
@@ -28,10 +33,10 @@ def get_all_transactions(
 
 # route to return one transaction
 @router.get("/get_one", status_code=200)
-async def get_one_transaction(
+def get_one_transaction(
     transaction: schemas.TransactionGetOne,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
     transaction_to_get = (
         db.query(models.Transaction)
@@ -49,10 +54,10 @@ async def get_one_transaction(
 
 # route to add a transaction
 @router.post("/create", status_code=201)
-async def create_transaction(
+def create_transaction(
     transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
     existing_user = (
         db.query(models.User)
@@ -78,10 +83,10 @@ async def create_transaction(
 
 # route to edit a transaction
 @router.put("/update", status_code=200)
-async def edit_transaction(
+def edit_transaction(
     transaction: schemas.TransactionUpdate,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
     transaction_to_edit = (
         db.query(models.Transaction)
@@ -109,10 +114,10 @@ async def edit_transaction(
 
 # route to delete a transaction
 @router.delete("/delete", status_code=200)
-async def delete_transaction(
+def delete_transaction(
     transaction: schemas.TransactionDelete,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
     existing_transaction = (
         db.query(models.Transaction)
@@ -138,7 +143,7 @@ async def delete_transaction(
 
 # route to move funds from one account to another
 @router.post("/move_funds", status_code=201)
-async def move_funds(
+def move_funds(
     move_funds: schemas.MoveFunds,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),

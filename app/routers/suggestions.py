@@ -13,7 +13,7 @@ TOKEN_SPECIAL = config("TOKEN_SPECIAL")
 
 # route to return all suggestions
 @router.get("/")
-async def get_all_suggestions(
+def get_all_suggestions(
     user_auth: int = Depends(oauth2.get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -23,13 +23,13 @@ async def get_all_suggestions(
         return {
             "Message": "Only an Admin can execute this query."
         }, status.HTTP_401_UNAUTHORIZED
-    suggestions = await db.query(models.Suggestion).all()
-    return await {"data": suggestions}, status.HTTP_200_OK
+    suggestions = db.query(models.Suggestion).all()
+    return {"data": suggestions}, status.HTTP_200_OK
 
 
 # route to add a suggestion
 @router.post("/create", status_code=201)
-async def create_suggestion(
+def create_suggestion(
     suggestion: schemas.SuggestionCreate,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
@@ -50,13 +50,13 @@ async def create_suggestion(
 
 # route to return one suggestion
 @router.get("/get_one", status_code=200)
-async def get_one_suggestion(
+def get_one_suggestion(
     suggestion: schemas.SuggestionGetOne,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
 
-   # verify if user has special access
+    # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only an Admin can execute this query."
@@ -71,13 +71,13 @@ async def get_one_suggestion(
 
 # route to update a suggestion
 @router.put("/update", status_code=200)
-async def update_suggestion(
+def update_suggestion(
     suggestion_update: schemas.SuggestionUpdate,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
 
-   # verify if user has special access
+    # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only Admin can update suggestions."
@@ -97,13 +97,13 @@ async def update_suggestion(
 
 # route to delete a suggestion
 @router.delete("/delete", status_code=200)
-async def delete_suggestion(
+def delete_suggestion(
     suggestion_info: schemas.SuggestionDelete,
     db: Session = Depends(get_db),
     user_auth: int = Depends(oauth2.get_current_user),
 ):
 
-   # verify if user has special access
+    # verify if user has special access
     if not verify_user_access(user_auth.user_id, db):
         return {
             "Message": "Only an Admin can delete suggestions."
@@ -122,6 +122,7 @@ async def delete_suggestion(
 
 # Function to check if user has special access
 def verify_user_access(user_id: int, db: Session = Depends(get_db)):
-    user = (db.query(models.User).filter(models.User.user_id == user_id).first())
-    if TOKEN_SPECIAL == user.email:
-        return True
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    if TOKEN_SPECIAL != user.email:
+        return False
+    return True

@@ -7,22 +7,9 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-# # route to return one user
-# @router.get("/get_one/{email}", status_code=200)
-# async def get_one_user(
-#     email: EmailStr,
-#     db: Session = Depends(get_db),
-#     user_auth: int = Depends(oauth2.get_current_user),
-# ):
-#     user = db.query(models.User).filter(models.User.email == email.lower()).first()
-#     if user is None:
-#         return {"error": "User not found"}, status.HTTP_404_NOT_FOUND
-#     return {"Message": "User is already registered"}, status.HTTP_200_OK
-
-
 # route to add a user
 @router.post("/create", status_code=201)
-async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     # check if the user already exists
     check_user = (
@@ -43,10 +30,10 @@ async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # route to update a user details
 @router.put("/email", status_code=200)
-async def update_user_email(
+def update_user_email(
     user: schemas.UserUpdateEmail,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -82,10 +69,10 @@ async def update_user_email(
 
 # route to update a user password
 @router.put("/password", status_code=200)
-async def update_user_password(
+def update_user_password(
     user: schemas.UserUpdatePassword,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -114,10 +101,10 @@ async def update_user_password(
 
 # route to delete a user
 @router.delete("/delete", status_code=200)
-async def delete_user(
+def delete_user(
     user: schemas.UserDelete,
     db: Session = Depends(get_db),
-    user_auth: int = Depends(oauth2.get_current_user),
+    user_auth: dict = Depends(oauth2.get_current_user),
 ):
     # find the user to be deleted
     user_to_delete = (
