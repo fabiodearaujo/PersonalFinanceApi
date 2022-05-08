@@ -1,37 +1,64 @@
 # necessary imports
-from app import models, schemas
+from app import models, oauth2, schemas
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
+from pyparsing import DictType
 from sqlalchemy.orm import Session
 
 router = APIRouter()
 
 
 # route to return all transactions from a user
-@router.get("/{user_id}", status_code=200)
-async def get_all_transactions(user_id: int, db: Session = Depends(get_db)):
+@router.get("/", status_code=200)
+def get_all_transactions(
+    db: Session = Depends(get_db),
+    user_auth: DictType = Depends(oauth2.get_current_user),
+):
+
+    print(f"user aut : {user_auth}")
+    print(type(user_auth))
+    print(f"user aut. user id : {user_auth.user_id}")
+    print(type(user_auth.user_id))
     transactions = (
-        db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+        db.query(models.Transaction)
+        .filter(models.Transaction.user_id == user_auth.user_id)
+        .all()
     )
+    # verify if it is the correct user
+    if transactions[0].user_id != user_auth.user_id:
+        return {
+            "error": "You are not authorized to access this resource."
+        }, status.HTTP_401_UNAUTHORIZED
     return {"data": transactions}, status.HTTP_200_OK
 
 
 # route to return one transaction
-@router.get("/get_one/{transaction_id}", status_code=200)
-async def get_one_transaction(transaction_id: int, db: Session = Depends(get_db)):
-    transaction = (
+@router.get("/get_one", status_code=200)
+def get_one_transaction(
+    transaction: schemas.TransactionGetOne,
+    db: Session = Depends(get_db),
+    user_auth: DictType = Depends(oauth2.get_current_user),
+):
+    transaction_to_get = (
         db.query(models.Transaction)
-        .filter(models.Transaction.transaction_id == transaction_id)
+        .filter(models.Transaction.transaction_id == transaction.transaction_id)
         .first()
     )
-    return {"data": transaction}, status.HTTP_200_OK
+
+    # verify if it is the correct user
+    if transaction_to_get.user_id != user_auth.user_id:
+        return {
+            "error": "You are not authorized to return this transaction."
+        }, status.HTTP_401_UNAUTHORIZED
+    return {"data": transaction_to_get}, status.HTTP_200_OK
 
 
 # route to add a transaction
 @router.post("/create", status_code=201)
-async def create_transaction(
+def create_transaction(
     transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
+    user_auth: DictType = Depends(oauth2.get_current_user),
 ):
     existing_user = (
         db.query(models.User)
@@ -40,35 +67,39 @@ async def create_transaction(
         )
         .first()
     )
+
+    # verify if it is the correct user
+    if transaction.user_id != int(user_auth.user_id):
+        return {
+            "error": "Not possible to create transaction to another user."
+        }, status.HTTP_401_UNAUTHORIZED
     if existing_user is None:
         return {"error": "There is no user with that id"}, status.HTTP_404_NOT_FOUND
     new_transaction = models.Transaction(**transaction.dict())
     db.add(new_transaction)
     db.commit()
-    transaction = (
-        db.query(models.Transaction)
-        .order_by(models.Transaction.transaction_id.desc())
-        .filter(
-            models.Transaction.transaction_name == transaction.transaction_name
-            and models.Transaction.user_id == transaction.user_id,
-        )
-        .first()
-    )
-    return {"data": transaction}, status.HTTP_201_CREATED
+
+    return {"Message": "Transaction created successfully."}, status.HTTP_201_CREATED
 
 
 # route to edit a transaction
-@router.put("/update/{transaction_id}", status_code=200)
-async def edit_transaction(
-    transaction_id: int,
+@router.put("/update", status_code=200)
+def edit_transaction(
     transaction: schemas.TransactionUpdate,
     db: Session = Depends(get_db),
+    user_auth: DictType = Depends(oauth2.get_current_user),
 ):
     transaction_to_edit = (
         db.query(models.Transaction)
-        .filter(models.Transaction.transaction_id == transaction_id)
+        .filter(models.Transaction.transaction_id == transaction.transaction_id)
         .first()
     )
+
+    # verify if it is the correct user
+    if transaction_to_edit.user_id != user_auth.user_id:
+        return {
+            "error": "You cannot edit a transaction from another user."
+        }, status.HTTP_401_UNAUTHORIZED
     if transaction_to_edit.transaction_category == "transfer":
         return {
             "error": "You cannot edit a transfer transaction"
@@ -79,26 +110,32 @@ async def edit_transaction(
     transaction_to_edit.transaction_value = transaction.transaction_value
     transaction_to_edit.transaction_date = transaction.transaction_date
     db.commit()
-    return {"data": transaction_to_edit}, status.HTTP_200_OK
+    return {"data": "Transaction updated successfully."}, status.HTTP_200_OK
 
 
 # route to delete a transaction
-@router.delete("/delete/{transaction_id}", status_code=200)
-async def delete_transaction(
-    transaction_id: int,
-    confirm: str,
+@router.delete("/delete", status_code=200)
+def delete_transaction(
+    transaction: schemas.TransactionDelete,
     db: Session = Depends(get_db),
+    user_auth: DictType = Depends(oauth2.get_current_user),
 ):
     existing_transaction = (
         db.query(models.Transaction)
-        .filter(models.Transaction.transaction_id == transaction_id)
+        .filter(models.Transaction.transaction_id == transaction.transaction_id)
         .first()
     )
+
+    # verify if it is the correct user
+    if existing_transaction.user_id != user_auth.user_id:
+        return {
+            "error": "You can delete only your own transactions."
+        }, status.HTTP_401_UNAUTHORIZED
     if existing_transaction.transaction_category == "transfer":
         return {
             "error": "You cannot delete a transfer transaction"
         }, status.HTTP_400_BAD_REQUEST
-    if confirm.lower() == "n":
+    if transaction.confirm is not True:
         return {"error": "Deletion canceled."}, status.HTTP_400_BAD_REQUEST
     db.delete(existing_transaction)
     db.commit()
@@ -107,15 +144,19 @@ async def delete_transaction(
 
 # route to move funds from one account to another
 @router.post("/move_funds", status_code=201)
-async def move_funds(
-    user_id: int,
-    transaction_value: float,
-    transaction_date: str,
-    account_type: str,
+def move_funds(
+    move_funds: schemas.MoveFunds,
     db: Session = Depends(get_db),
+    user_auth: DictType = Depends(oauth2.get_current_user),
 ):
+    # verify if it is the correct user
+    if move_funds.user_id != user_auth.user_id:
+        return {
+            "error": "You cannot move funds of another user."
+        }, status.HTTP_401_UNAUTHORIZED
+
     # defining the direction of the transaction
-    if account_type == "main":
+    if move_funds.account_type == "main":
         account_debit = "savings"
         account_credit = "main"
     else:
@@ -126,7 +167,7 @@ async def move_funds(
     check_account_credit = (
         db.query(models.Transaction)
         .filter(
-            models.Transaction.user_id == user_id,
+            models.Transaction.user_id == move_funds.user_id,
             models.Transaction.account_type == account_debit,
             models.Transaction.transaction_type == "credit",
         )
@@ -141,7 +182,7 @@ async def move_funds(
     check_account_debit = (
         db.query(models.Transaction)
         .filter(
-            models.Transaction.user_id == user_id,
+            models.Transaction.user_id == move_funds.user_id,
             models.Transaction.account_type == account_debit,
             models.Transaction.transaction_type == "debit",
         )
@@ -156,19 +197,19 @@ async def move_funds(
     check_account_balance = check_account_credit_total - check_account_debit_total
 
     # check if user has enough funds to move funds
-    if check_account_balance < transaction_value:
+    if check_account_balance < move_funds.transaction_value:
         return {
             "error": "Not enough funds to move. Transaction cancelled."
         }, status.HTTP_400_BAD_REQUEST
 
     # debit transaction
     debit_transaction = models.Transaction(
-        user_id=user_id,
+        user_id=move_funds.user_id,
         transaction_name="Transfer funds",
         transaction_category="transfer",
         transaction_type="debit",
-        transaction_value=transaction_value,
-        transaction_date=transaction_date,
+        transaction_value=move_funds.transaction_value,
+        transaction_date=move_funds.transaction_date,
         account_type=account_debit,
     )
     db.add(debit_transaction)
@@ -176,12 +217,12 @@ async def move_funds(
 
     # credit transaction
     credit_transaction = models.Transaction(
-        user_id=user_id,
+        user_id=move_funds.user_id,
         transaction_name="Receive funds",
         transaction_category="transfer",
         transaction_type="credit",
-        transaction_value=transaction_value,
-        transaction_date=transaction_date,
+        transaction_value=move_funds.transaction_value,
+        transaction_date=move_funds.transaction_date,
         account_type=account_credit,
     )
     db.add(credit_transaction)
