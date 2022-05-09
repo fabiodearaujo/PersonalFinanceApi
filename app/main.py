@@ -1,5 +1,6 @@
 # necessary imports
-from decouple import config
+# from decouple import config
+import os
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,7 +13,8 @@ from .routers import auth, suggestions, transactions, users
 Base.metadata.create_all(bind=engine)
 
 # App repository link setup
-app_download = config("APP_URL")
+# app_download = config("APP_URL")
+app_download = os.environ.get("APP_URL")
 
 # create a FastAPI app instance
 app = FastAPI(
@@ -22,7 +24,8 @@ app = FastAPI(
 )
 
 # add CORS middleware
-origins = config("CORS_ORIGINS")
+# origins = config("CORS_ORIGINS")
+origins = os.environ.get("CORS_ORIGINS")
 
 app.add_middleware(
     CORSMiddleware,
