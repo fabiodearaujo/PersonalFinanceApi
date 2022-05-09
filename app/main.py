@@ -23,7 +23,6 @@ app = FastAPI(
 
 # add CORS middleware
 origins = config("CORS_ORIGINS")
-# origins = os.environ.get("CORS_ORIGINS")
 
 app.add_middleware(
     CORSMiddleware,
