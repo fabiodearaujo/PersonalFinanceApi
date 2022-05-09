@@ -1,14 +1,11 @@
 # necessary imports to setup the database
-# import os
 from decouple import config
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # getting environment variables to setup the database
-
 SQLALCHEMY_DB_URL = config("SQLALCHEMY_DB_URL")
-# SQLALCHEMY_DB_URL = os.environ.get("SQLALCHEMY_DB_URL")
 
 # create the engine and session to connect to the database
 engine = create_engine(SQLALCHEMY_DB_URL)

@@ -1,6 +1,5 @@
 # necessary imports
 from decouple import config
-# import os
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,12 +13,11 @@ Base.metadata.create_all(bind=engine)
 
 # App repository link setup
 app_download = config("APP_URL")
-# app_download = os.environ.get("APP_URL")
 
 # create a FastAPI app instance
 app = FastAPI(
     title="Personal Finance API",
-    description="This API is used to manage personal finance throught the APP.",
+    description="This API is the backend part of the Personal Finance APP.",
     version="0.1.0",
 )
 
