@@ -8,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 
 SQLALCHEMY_DB_URL = config("SQLALCHEMY_DB_URL")
 
+print(SQLALCHEMY_DB_URL)
+
 # create the engine and session to connect to the database
 engine = create_engine(SQLALCHEMY_DB_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
