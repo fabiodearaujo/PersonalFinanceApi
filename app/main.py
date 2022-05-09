@@ -17,7 +17,7 @@ app_download = config("APP_URL")
 # create a FastAPI app instance
 app = FastAPI(
     title="Personal Finance API",
-    description="This API is used to manage personal finance throught the APP.",
+    description="This API is the backend part of the Personal Finance APP.",
     version="0.1.0",
 )
 
