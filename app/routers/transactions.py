@@ -110,7 +110,7 @@ def edit_transaction(
     transaction_to_edit.transaction_value = transaction.transaction_value
     transaction_to_edit.transaction_date = transaction.transaction_date
     db.commit()
-    return {"data": "Transaction updated successfully."}, status.HTTP_200_OK
+    return {"Message": "Transaction updated successfully."}, status.HTTP_200_OK
 
 
 # route to delete a transaction
@@ -139,7 +139,7 @@ def delete_transaction(
         return {"error": "Deletion canceled."}, status.HTTP_400_BAD_REQUEST
     db.delete(existing_transaction)
     db.commit()
-    return {"data": "Transaction deleted successfully"}, status.HTTP_200_OK
+    return {"Message": "Transaction deleted successfully"}, status.HTTP_200_OK
 
 
 # route to move funds from one account to another
