@@ -9,9 +9,11 @@ router = APIRouter()
 
 
 #route to return own user
-@router.get("/users/me", response_model=schemas.User)
-async def read_own_user(current_user: models.User = Depends(utils.get_current_user)):
-    return current_user
+@router.get("/users/me", status_code=status.HTTP_200_OK)
+def get_own_user(db:Session = Depends(get_db), auth_user = Depends(oauth2.get_current_user)):
+    user_id = auth_user.user_id
+    email = auth_user.email
+    return {"user_id": user_id, "email": email}
 
 
 # route to add a user
