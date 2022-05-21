@@ -8,6 +8,12 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
+#route to return own user
+@router.get("/users/me", response_model=schemas.User)
+async def read_own_user(current_user: models.User = Depends(utils.get_current_user)):
+    return current_user
+
+
 # route to add a user
 @router.post("/create", status_code=201)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
