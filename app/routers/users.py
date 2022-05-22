@@ -26,6 +26,36 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     new_user = models.User(email=user.email.lower(), password=hashed_password)
     db.add(new_user)
     db.commit()
+
+    #initialize the user's main and savings accounts
+    user_created = db.query(models.User).filter(models.User.email == user.email.lower()).first()
+
+    new_main_account = schemas.TransactionCreate(
+        user_id=user_created.user_id,
+        transaction_name="Account opening",
+        transaction_category="Account opening",
+        transaction_type="credit",
+        transaction_value=0,
+        transaction_date=utils.get_current_date(),
+        account_type="main",
+    )
+    new_main_transaction = models.Transaction(**new_main_account.dict())
+
+    new_savings_account = schemas.TransactionCreate(
+        user_id=user_created.user_id,
+        transaction_name="Account opening",
+        transaction_category="Account opening",
+        transaction_type="credit",
+        transaction_value=0,
+        transaction_date=utils.get_current_date(),
+        account_type="savings",
+    )
+    new_savings_transaction = models.Transaction(**new_savings_account.dict())
+
+    db.add(new_main_transaction)
+    db.add(new_savings_transaction)
+    db.commit()
+
     return {"Message": "User created successfully."}, status.HTTP_201_CREATED
 
 

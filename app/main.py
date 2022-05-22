@@ -40,5 +40,5 @@ app.include_router(auth.router, prefix="/auth", tags=["authorization"])
 @app.get("/")
 def read_root():
     return {
-        "Welcome to Personal Finance API": f"Get our app at {app_download}"
+        "Welcome to Personal Finance API": f"Our app is under development at {app_download}"
     }, status.HTTP_200_OK

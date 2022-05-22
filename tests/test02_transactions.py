@@ -6,7 +6,7 @@ from app import oauth2
 client = TestClient(app)
 
 # global variables to store the token and user information
-user_test = {"email": "test@test.com", "password": "test"}
+user_test = {"email": "unit.test@test.com", "password": "test"}
 user_id = 0
 
 
