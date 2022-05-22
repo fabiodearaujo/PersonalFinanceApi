@@ -11,18 +11,18 @@ def test_create_user():
 
     # create the user
     response = client.post("/users/create", json={
-        "email": "unit.test@test.com", "password": "test"})
+        "email": "unit.test@test.com", "password": "Test01!Unit22"})
     assert response.json() == [{"Message": "User created successfully."}, 201]
     assert response.status_code == 201
 
     # return error if user already exists
     response = client.post("/users/create", json={
-        "email": "unit.test@test.com", "password": "test"
+        "email": "unit.test@test.com", "password": "Test01!Unit22"
     })
     assert response.json() == [{"error": "User already exists."}, 400]
 
     # return error if email is not valid
-    response = client.post("/users/create", json={"email": "test", "password": "test"})
+    response = client.post("/users/create", json={"email": "test", "password": "Test01!Unit22"})
     assert response.json() == {
         "detail": [{
             "loc": [
@@ -32,7 +32,7 @@ def test_create_user():
 
 
 # global variables to store the token and user information
-user_test = {"email": "test1@test.com", "password": "test"}
+user_test = {"email": "test1@test.com", "password": "Test01!Unit22"}
 user_id = 0
 context = {}
 
@@ -50,7 +50,7 @@ def test_update_user_email():
     # failing to update the email if new email already exists.
     response = client.put(
         "/users/email", json={
-            "user_id": user_id,"email": "unit.test@test.com", "password": "test"            
+            "user_id": user_id,"email": "unit.test@test.com", "password": "Test01!Unit22"            
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
     assert response.json() == [{"error": "User already exists."}, 400]
@@ -78,7 +78,7 @@ def test_update_user_password():
     # user insert wrong password
     response = client.put(
         "/users/password", json={
-            "user_id": user_id,"password": "tert", "new_password": "failed"            
+            "user_id": user_id,"password": "tert", "new_password": "Test01!Unit22"            
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
     assert response.json() == [{'error': 'Credentials are incorrect.'}, 400]
@@ -88,10 +88,10 @@ def test_update_user_password():
         "/users/password", json={
             "user_id": user_id,
             "password": user_test["password"],
-            "new_password": "test10"
+            "new_password": "test10Tsh!ks"
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
-    user_test["password"] = "test10"
+    user_test["password"] = "test10Tsh!ks"
     assert response.json() == [{"Message": "User password updated successfully."}, 200]
 
 
