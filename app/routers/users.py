@@ -29,6 +29,15 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return {"Message": "User created successfully."}, status.HTTP_201_CREATED
 
 
+# route to get a user
+@router.get("/users/me", status_code=200)
+def get_my_user(user_auth: DictType = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    # get the user from the database
+    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
+    schemas.MyUser = {"user_id": user.user_id, "email": user.email}
+    return schemas.MyUser, status.HTTP_200_OK
+
+
 # route to update a user details
 @router.put("/email", status_code=200)
 def update_user_email(
