@@ -8,4 +8,4 @@ client = TestClient(app)
 # test the root route
 def test_root():
     response = client.get("/")
-    assert response.json() == [{"Welcome to Personal Finance API": "Get our app at https://github.com/fabiodearaujo"}, 200]
+    assert response.json() == [{"Welcome to Personal Finance API": "Our app is under development at https://github.com/fabiodearaujo"}, 200]

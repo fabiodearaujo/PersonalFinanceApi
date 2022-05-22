@@ -30,7 +30,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 # route to get a user
-@router.get("/users/me", status_code=200)
+@router.get("/my_user", status_code=200)
 def get_my_user(user_auth: DictType = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     # get the user from the database
     user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()

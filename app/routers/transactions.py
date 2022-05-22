@@ -53,6 +53,85 @@ def get_one_transaction(
     return {"data": transaction_to_get}, status.HTTP_200_OK
 
 
+# route to return the balance of main and savings accounts
+@router.get("/balance", status_code=200)
+def get_balance(
+    db: Session = Depends(get_db),
+    user_auth: DictType = Depends(oauth2.get_current_user),
+):
+     # get the origin account balance
+    check_main_account_credit = (
+        db.query(models.Transaction)
+        .filter(
+            models.Transaction.user_id == user_auth.user_id,
+            models.Transaction.account_type == "main",
+            models.Transaction.transaction_type == "credit",
+        )
+        .all()
+    )
+    # get the total credit amount of origin account
+    check_main_account_credit_total = 0
+    for transaction in check_main_account_credit:
+        check_main_account_credit_total += transaction.transaction_value
+
+    # get the origin account debits
+    check_main_account_debit = (
+        db.query(models.Transaction)
+        .filter(
+            models.Transaction.user_id == user_auth.user_id,
+            models.Transaction.account_type == "main",
+            models.Transaction.transaction_type == "debit",
+        )
+        .all()
+    )
+
+    # get the total debit amount of origin account
+    check_main_account_debit_total = 0
+    for transaction in check_main_account_debit:
+        check_main_account_debit_total += transaction.transaction_value
+
+    main_account_balance = check_main_account_credit_total - check_main_account_debit_total
+
+    # get the savings account balance
+    check_savings_account_credit = (
+        db.query(models.Transaction)
+        .filter(
+            models.Transaction.user_id == user_auth.user_id,
+            models.Transaction.account_type == "savings",
+            models.Transaction.transaction_type == "credit",
+        )
+        .all()
+    )
+
+    # get the total credit amount of savings account
+    check_savings_account_credit_total = 0
+    for transaction in check_savings_account_credit:
+        check_savings_account_credit_total += transaction.transaction_value
+
+    # get the savings account debits
+    check_savings_account_debit = (
+        db.query(models.Transaction)
+        .filter(
+            models.Transaction.user_id == user_auth.user_id,
+            models.Transaction.account_type == "savings",
+            models.Transaction.transaction_type == "debit",
+        )
+        .all()
+    )
+
+    # get the total debit amount of savings account
+    check_savings_account_debit_total = 0
+    for transaction in check_savings_account_debit:
+        check_savings_account_debit_total += transaction.transaction_value
+
+    savings_account_balance = check_savings_account_credit_total - check_savings_account_debit_total
+
+    return {
+        "main_account_balance": main_account_balance,
+        "savings_account_balance": savings_account_balance,
+    }, status.HTTP_200_OK
+
+
 # route to add a transaction
 @router.post("/create", status_code=201)
 def create_transaction(
