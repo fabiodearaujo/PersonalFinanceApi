@@ -1,3 +1,4 @@
+import re
 import datetime
 from passlib.context import CryptContext
 
@@ -14,13 +15,17 @@ def verify_context(plain_password, hashed_password):
 
 # function to check password strength
 def check_password_strength(password):
-    if len(password) < 8:
+    if not re.search("[a-z]", password):
+        return False
+    elif not re.search("[A-Z]", password):
+        return False
+    elif not re.search("[$-/:-?{-~!^_`\[\]]", password):
+        return False
+    elif not re.search("[0-9]", password):
+        return False
+    elif len(password) < 8:
         return False
     elif len(password) > 20:
-        return False
-    elif password.isdigit():
-        return False
-    elif password.isalpha():
         return False
     else:
         return True

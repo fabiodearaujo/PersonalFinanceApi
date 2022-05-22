@@ -20,7 +20,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         return {"error": "User already exists."}, status.HTTP_400_BAD_REQUEST
 
     #check if password is strong enough
-    if not utils.is_strong_password(user.password):
+    if not utils.check_password_strength(user.password):
         return {
             "error": "Password is not strong enough. (Minimum of 8 characters, upper and lower case, number and a special symbol.)"
         }, status.HTTP_400_BAD_REQUEST
@@ -127,7 +127,7 @@ def update_user_password(
         }, status.HTTP_401_UNAUTHORIZED
 
     #check if password is strong enough
-    if not utils.is_strong_password(user.new_password):
+    if not utils.check_password_strength(user.new_password):
         return {
             "error": "Password is not strong enough. (Minimum of 8 characters, upper and lower case, number and a special symbol.)"
         }, status.HTTP_400_BAD_REQUEST
