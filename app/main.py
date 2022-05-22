@@ -22,11 +22,9 @@ app = FastAPI(
 )
 
 # add CORS middleware
-origins = config("CORS_ORIGINS")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origins],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,5 +40,5 @@ app.include_router(auth.router, prefix="/auth", tags=["authorization"])
 @app.get("/")
 def read_root():
     return {
-        "Welcome to Personal Finance API": f"Get our app at {app_download}"
+        "Welcome to Personal Finance API": f"Our app is under development at {app_download}"
     }, status.HTTP_200_OK

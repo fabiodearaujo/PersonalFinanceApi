@@ -11,13 +11,13 @@ def test_create_user():
 
     # create the user
     response = client.post("/users/create", json={
-        "email": "test@test.com", "password": "test"})
+        "email": "unit.test@test.com", "password": "test"})
     assert response.json() == [{"Message": "User created successfully."}, 201]
     assert response.status_code == 201
 
     # return error if user already exists
     response = client.post("/users/create", json={
-        "email": "test@test.com", "password": "test"
+        "email": "unit.test@test.com", "password": "test"
     })
     assert response.json() == [{"error": "User already exists."}, 400]
 
@@ -50,7 +50,7 @@ def test_update_user_email():
     # failing to update the email if new email already exists.
     response = client.put(
         "/users/email", json={
-            "user_id": user_id,"email": "test@test.com", "password": "test"            
+            "user_id": user_id,"email": "unit.test@test.com", "password": "test"            
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
     assert response.json() == [{"error": "User already exists."}, 400]
