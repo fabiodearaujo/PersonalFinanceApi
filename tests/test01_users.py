@@ -84,7 +84,7 @@ def test_update_user_password():
     # user insert wrong password
     response = client.put(
         "/users/password", json={
-            "user_id": user_id,"password": "tert", "new_password": user_pass1            
+            "user_id": user_id,"password": user_pass3, "new_password": user_pass1            
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
     assert response.json() == [{'error': 'Credentials are incorrect.'}, 400]
