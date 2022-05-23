@@ -6,7 +6,7 @@ from app import oauth2
 client = TestClient(app)
 
 # global variables to store the token and user information
-user_test = {"email": "unit.test@test.com", "password": "test"}
+user_test = {"email": "unit.test2@test.com", "password": "Test2!Unit22"}
 user_id = 0
 
 # The suggestions routes are blocked to regular users.

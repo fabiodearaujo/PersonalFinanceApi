@@ -5,36 +5,36 @@ from app import oauth2
 
 client = TestClient(app)
 
+# global variables to store the token and user information
+user_test = {"email": "unit.test@test.com", "password": "Test1!Unit22"}
+user_test2 = {"email": "unit.test2@test.com", "password": "Test2!Unit22"}
+user_id = 0
+context = {}
+
 
 # test create user route
 def test_create_user():
 
     # create the user
     response = client.post("/users/create", json={
-        "email": "unit.test@test.com", "password": "Test01!Unit22"})
+        "email": user_test2["email"], "password": user_test2["password"]})
     assert response.json() == [{"Message": "User created successfully."}, 201]
     assert response.status_code == 201
 
     # return error if user already exists
     response = client.post("/users/create", json={
-        "email": "unit.test@test.com", "password": "Test01!Unit22"
+        "email": user_test2["email"], "password": "TestError!76"
     })
     assert response.json() == [{"error": "User already exists."}, 400]
 
     # return error if email is not valid
-    response = client.post("/users/create", json={"email": "test", "password": "Test01!Unit22"})
+    response = client.post("/users/create", json={"email": "test", "password": "TestWrongMail2"})
     assert response.json() == {
         "detail": [{
             "loc": [
                 "body", "email"
             ], "msg": "value is not a valid email address", "type": "value_error.email"
         }]}
-
-
-# global variables to store the token and user information
-user_test = {"email": "test1@test.com", "password": "Test01!Unit22"}
-user_id = 0
-context = {}
 
 
 # test update user email route
@@ -59,11 +59,11 @@ def test_update_user_email():
     response = client.put(
         "/users/email", json={
             "user_id": user_id,
-            "email": "test10@test.com",
+            "email": "unit.test777@test.com",
             "password": user_test["password"]            
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
-    user_test["email"] = "test10@test.com"
+    user_test["email"] = "unit.test777@test.com"
     assert response.json() == [{"Message": "User updated successfully."}, 200]
 
 
