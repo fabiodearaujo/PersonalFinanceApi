@@ -21,7 +21,7 @@ def check_password_strength(password):
         return False
     elif not re.search("[$-/:-?{-~!^_`\[\]]", password):
         return False
-    elif not re.search("[0-9]", password):
+    elif not re.search(r"\d", password):
         return False
     elif len(password) < 8:
         return False
