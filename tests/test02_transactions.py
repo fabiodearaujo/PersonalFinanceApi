@@ -1,12 +1,16 @@
 from http import client
+from decouple import config
 from fastapi.testclient import TestClient
 from app.main import app
-from app import oauth2
+from app import oauth2, utils
 
 client = TestClient(app)
 
+# getting environment variables
+user_pass2 = config("USER_PASS2")
+
 # global variables to store the token and user information
-user_test = {"email": "unit.test@test.com", "password": "test"}
+user_test = {"email": "unit.test2@test.com", "password": user_pass2}
 user_id = 0
 
 
@@ -75,6 +79,7 @@ def test_get_all_transactions():
         "/transactions/", headers={"Authorization": f"Bearer {jwt_token}"}
     )
     transaction_id = response.json()[0]["data"][0]["transaction_id"]
+    print(transaction_id)
     assert response.status_code == 200
     return transaction_id
 
@@ -94,14 +99,15 @@ def test_get_one_transaction():
         json={"transaction_id": transaction},
         headers={"Authorization": f"Bearer {jwt_token}"}
     )
+    date_today = utils.get_current_date()
     assert response.json() == [{"data": {
             "transaction_id": transaction,
             "user_id": user_id,
-            "transaction_name": "Initial balance",
-            "transaction_category": "initial balance",
+            "transaction_name": "Main account opening",
+            "transaction_category": "Initial balance",
             "transaction_type": "credit",
-            "transaction_value": 2525.25,
-            "transaction_date": "2022-05-01",
+            "transaction_value": 0.0,
+            "transaction_date": date_today,
             "account_type": "main"
             }}, 200]
 

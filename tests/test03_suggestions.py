@@ -1,12 +1,16 @@
 from http import client
+from decouple import config
 from fastapi.testclient import TestClient
 from app.main import app
 from app import oauth2
 
 client = TestClient(app)
 
+# getting environment variables
+user_pass2 = config("USER_PASS2")
+
 # global variables to store the token and user information
-user_test = {"email": "unit.test@test.com", "password": "test"}
+user_test = {"email": "unit.test2@test.com", "password": user_pass2}
 user_id = 0
 
 # The suggestions routes are blocked to regular users.
