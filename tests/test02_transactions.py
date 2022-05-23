@@ -1,12 +1,16 @@
 from http import client
+from decouple import config
 from fastapi.testclient import TestClient
 from app.main import app
 from app import oauth2, utils
 
 client = TestClient(app)
 
+# getting environment variables
+user_pass2 = config("USER_PASS2")
+
 # global variables to store the token and user information
-user_test = {"email": "unit.test2@test.com", "password": "Test2!Unit22"}
+user_test = {"email": "unit.test2@test.com", "password": user_pass2}
 user_id = 0
 
 

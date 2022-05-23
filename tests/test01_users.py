@@ -1,13 +1,19 @@
 from http import client
+from decouple import config
 from fastapi.testclient import TestClient
 from app.main import app
 from app import oauth2
 
 client = TestClient(app)
 
+# getting environment variables
+user_pass1 = config("USER_PASS1")
+user_pass2 = config("USER_PASS2")
+user_pass3 = config("USER_PASS3")
+
 # global variables to store the token and user information
-user_test = {"email": "unit.test@test.com", "password": "Test1!Unit22"}
-user_test2 = {"email": "unit.test2@test.com", "password": "Test2!Unit22"}
+user_test = {"email": "unit.test@test.com", "password": user_pass1}
+user_test2 = {"email": "unit.test2@test.com", "password": user_pass2}
 user_id = 0
 context = {}
 
@@ -23,12 +29,12 @@ def test_create_user():
 
     # return error if user already exists
     response = client.post("/users/create", json={
-        "email": user_test2["email"], "password": "TestError!76"
+        "email": user_test2["email"], "password": user_pass3
     })
     assert response.json() == [{"error": "User already exists."}, 400]
 
     # return error if email is not valid
-    response = client.post("/users/create", json={"email": "test", "password": "TestWrongMail2"})
+    response = client.post("/users/create", json={"email": "test", "password": user_pass3})
     assert response.json() == {
         "detail": [{
             "loc": [
@@ -50,7 +56,7 @@ def test_update_user_email():
     # failing to update the email if new email already exists.
     response = client.put(
         "/users/email", json={
-            "user_id": user_id,"email": "unit.test@test.com", "password": "Test01!Unit22"            
+            "user_id": user_id,"email": "unit.test@test.com", "password": user_pass1            
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
     assert response.json() == [{"error": "User already exists."}, 400]
@@ -78,7 +84,7 @@ def test_update_user_password():
     # user insert wrong password
     response = client.put(
         "/users/password", json={
-            "user_id": user_id,"password": "tert", "new_password": "Test01!Unit22"            
+            "user_id": user_id,"password": "tert", "new_password": user_pass1            
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
     assert response.json() == [{'error': 'Credentials are incorrect.'}, 400]
@@ -88,10 +94,10 @@ def test_update_user_password():
         "/users/password", json={
             "user_id": user_id,
             "password": user_test["password"],
-            "new_password": "test10Tsh!ks"
+            "new_password": user_pass3
         }, headers={"Authorization": f"Bearer {jwt_token}"}
     )
-    user_test["password"] = "test10Tsh!ks"
+    user_test["password"] = user_pass3
     assert response.json() == [{"Message": "User password updated successfully."}, 200]
 
 
