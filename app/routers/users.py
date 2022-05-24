@@ -19,7 +19,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if check_user:
         return {"error": "User already exists."}, status.HTTP_400_BAD_REQUEST
 
-    #check if password is strong enough
+    # check if password is strong enough
     if not utils.check_password_strength(user.password):
         return {
             "error": "Password is not strong enough. (Minimum of 8 characters, upper and lower case, number and a special symbol.)"
@@ -33,7 +33,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
 
-    #initialize the user's main and savings accounts
+    # initialize the user's main and savings accounts
     user_created = db.query(models.User).filter(models.User.email == user.email.lower()).first()
 
     new_main_account = schemas.TransactionCreate(
@@ -126,7 +126,7 @@ def update_user_password(
             "error": "You are not authorized to update this user."
         }, status.HTTP_401_UNAUTHORIZED
 
-    #check if password is strong enough
+    # check if password is strong enough
     if not utils.check_password_strength(user.new_password):
         return {
             "error": "Password is not strong enough. (Minimum of 8 characters, upper and lower case, number and a special symbol.)"

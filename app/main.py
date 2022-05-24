@@ -30,10 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/auth", tags=["authorization"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
 app.include_router(suggestions.router, prefix="/suggestions", tags=["suggestions"])
-app.include_router(auth.router, prefix="/auth", tags=["authorization"])
 
 
 # create the root route
