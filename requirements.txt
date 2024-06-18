@@ -53,7 +53,7 @@ types-requests==2.27.25
 types-urllib3==1.26.14
 typing_extensions==4.2.0
 ujson==5.4.0
-urllib3==1.26.18
+urllib3==1.26.19
 uvicorn==0.17.6
 watchgod==0.8.2
 websockets==10.3
