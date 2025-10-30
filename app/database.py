@@ -36,8 +36,8 @@ engine = create_engine(
     SQLALCHEMY_DB_URL,
     connect_args=connect_args,
     pool_pre_ping=True,  # Enable connection health checks
-    pool_size=10,        # Maximum number of connections
-    max_overflow=20      # Allow up to 20 extra connections
+    pool_size=10,  # Maximum number of connections
+    max_overflow=20,  # Allow up to 20 extra connections
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

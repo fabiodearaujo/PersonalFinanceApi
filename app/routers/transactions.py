@@ -89,7 +89,9 @@ def get_balance(
     for transaction in check_main_account_debit:
         check_main_account_debit_total += transaction.transaction_value
 
-    main_account_balance = check_main_account_credit_total - check_main_account_debit_total
+    main_account_balance = (
+        check_main_account_credit_total - check_main_account_debit_total
+    )
 
     # get the savings account balance
     check_savings_account_credit = (
@@ -123,7 +125,9 @@ def get_balance(
     for transaction in check_savings_account_debit:
         check_savings_account_debit_total += transaction.transaction_value
 
-    savings_account_balance = check_savings_account_credit_total - check_savings_account_debit_total
+    savings_account_balance = (
+        check_savings_account_credit_total - check_savings_account_debit_total
+    )
 
     return {
         "main_account_balance": main_account_balance,

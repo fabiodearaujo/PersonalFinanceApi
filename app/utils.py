@@ -17,10 +17,10 @@ def hash_context(password: str):
 def verify_context(plain_password, hashed_password):
     try:
         # Truncate password to 72 bytes if necessary
-        password_bytes = plain_password.encode('utf-8')[:72]
+        password_bytes = plain_password.encode("utf-8")[:72]
         if isinstance(hashed_password, str):
             # Convert hex string back to bytes
-            hashed_bytes = bytes.fromhex(hashed_password.replace('\\x', ''))
+            hashed_bytes = bytes.fromhex(hashed_password.replace("\x", ""))
             return bcrypt.checkpw(password_bytes, hashed_bytes)
         return bcrypt.checkpw(password_bytes, hashed_password)
     except Exception as e:
@@ -28,6 +28,9 @@ def verify_context(plain_password, hashed_password):
         print(f"Password bytes: {password_bytes}")
         print(f"Hashed password: {hashed_password}")
         return False
+
+
+
 
 # function to check password strength
 def check_password_strength(password):

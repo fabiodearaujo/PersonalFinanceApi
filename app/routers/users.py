@@ -33,7 +33,9 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
 
     # initialize the user's main and savings accounts
-    user_created = db.query(models.User).filter(models.User.email == user.email.lower()).first()
+    user_created = (
+        db.query(models.User).filter(models.User.email == user.email.lower()).first()
+    )
 
     new_main_account = schemas.TransactionCreate(
         user_id=user_created.user_id,
