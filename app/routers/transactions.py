@@ -2,7 +2,6 @@
 from app import models, oauth2, schemas
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
-from pyparsing import DictType
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -12,7 +11,7 @@ router = APIRouter()
 @router.get("/", status_code=200)
 def get_all_transactions(
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
 
     print(f"user aut : {user_auth}")
@@ -33,15 +32,15 @@ def get_all_transactions(
 
 
 # route to return one transaction
-@router.get("/get_one", status_code=200)
+@router.get("/get_one/{transaction_id}", status_code=200)
 def get_one_transaction(
-    transaction: schemas.TransactionGetOne,
+    transaction_id: int,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     transaction_to_get = (
         db.query(models.Transaction)
-        .filter(models.Transaction.transaction_id == transaction.transaction_id)
+        .filter(models.Transaction.transaction_id == transaction_id)
         .first()
     )
 
@@ -57,9 +56,9 @@ def get_one_transaction(
 @router.get("/balance", status_code=200)
 def get_balance(
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
-     # get the origin account balance
+    # get the origin account balance
     check_main_account_credit = (
         db.query(models.Transaction)
         .filter(
@@ -90,7 +89,9 @@ def get_balance(
     for transaction in check_main_account_debit:
         check_main_account_debit_total += transaction.transaction_value
 
-    main_account_balance = check_main_account_credit_total - check_main_account_debit_total
+    main_account_balance = (
+        check_main_account_credit_total - check_main_account_debit_total
+    )
 
     # get the savings account balance
     check_savings_account_credit = (
@@ -124,7 +125,9 @@ def get_balance(
     for transaction in check_savings_account_debit:
         check_savings_account_debit_total += transaction.transaction_value
 
-    savings_account_balance = check_savings_account_credit_total - check_savings_account_debit_total
+    savings_account_balance = (
+        check_savings_account_credit_total - check_savings_account_debit_total
+    )
 
     return {
         "main_account_balance": main_account_balance,
@@ -137,7 +140,7 @@ def get_balance(
 def create_transaction(
     transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     existing_user = (
         db.query(models.User)
@@ -166,7 +169,7 @@ def create_transaction(
 def edit_transaction(
     transaction: schemas.TransactionUpdate,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     transaction_to_edit = (
         db.query(models.Transaction)
@@ -197,7 +200,7 @@ def edit_transaction(
 def delete_transaction(
     transaction: schemas.TransactionDelete,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     existing_transaction = (
         db.query(models.Transaction)
@@ -226,7 +229,7 @@ def delete_transaction(
 def move_funds(
     move_funds: schemas.MoveFunds,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if move_funds.user_id != user_auth.user_id:

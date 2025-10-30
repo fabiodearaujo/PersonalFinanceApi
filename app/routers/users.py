@@ -2,7 +2,6 @@
 from app import models, oauth2, schemas, utils
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
-from pyparsing import DictType
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -22,7 +21,10 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # check if password is strong enough
     if not utils.check_password_strength(user.password):
         return {
-            "error": "Password is not strong enough. (Minimum of 8 characters, upper and lower case, number and a special symbol.)"
+            "error": (
+                "Password is not strong enough. (Minimum of 8 characters, "
+                "upper and lower case, number and a special symbol.)"
+            )
         }, status.HTTP_400_BAD_REQUEST
 
     # hash the password
@@ -34,7 +36,9 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
 
     # initialize the user's main and savings accounts
-    user_created = db.query(models.User).filter(models.User.email == user.email.lower()).first()
+    user_created = (
+        db.query(models.User).filter(models.User.email == user.email.lower()).first()
+    )
 
     new_main_account = schemas.TransactionCreate(
         user_id=user_created.user_id,
@@ -67,11 +71,16 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # route to get a user
 @router.get("/my_user", status_code=200)
-def get_my_user(user_auth: DictType = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+def get_my_user(
+    user_auth: models.User = Depends(oauth2.get_current_user),
+    db: Session = Depends(get_db),
+):
     # get the user from the database
-    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
-    schemas.MyUser = {"user_id": user.user_id, "email": user.email}
-    return schemas.MyUser, status.HTTP_200_OK
+    user = (
+        db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
+    )
+    user_data = {"user_id": user.user_id, "email": user.email}
+    return schemas.MyUser(**user_data), status.HTTP_200_OK
 
 
 # route to update a user details
@@ -79,7 +88,7 @@ def get_my_user(user_auth: DictType = Depends(oauth2.get_current_user), db: Sess
 def update_user_email(
     user: schemas.UserUpdateEmail,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -118,7 +127,7 @@ def update_user_email(
 def update_user_password(
     user: schemas.UserUpdatePassword,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -129,7 +138,10 @@ def update_user_password(
     # check if password is strong enough
     if not utils.check_password_strength(user.new_password):
         return {
-            "error": "Password is not strong enough. (Minimum of 8 characters, upper and lower case, number and a special symbol.)"
+            "error": (
+                "Password is not strong enough. (Minimum of 8 characters,"
+                " upper and lower case, number and a special symbol.)"
+            )
         }, status.HTTP_400_BAD_REQUEST
 
     # return user details
@@ -156,7 +168,7 @@ def update_user_password(
 def delete_user(
     user: schemas.UserDelete,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # find the user to be deleted
     user_to_delete = (
