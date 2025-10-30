@@ -2,7 +2,6 @@
 from app import models, oauth2, schemas
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
-from pyparsing import DictType
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -12,7 +11,7 @@ router = APIRouter()
 @router.get("/", status_code=200)
 def get_all_transactions(
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
 
     print(f"user aut : {user_auth}")
@@ -33,15 +32,15 @@ def get_all_transactions(
 
 
 # route to return one transaction
-@router.get("/get_one", status_code=200)
+@router.get("/get_one/{transaction_id}", status_code=200)
 def get_one_transaction(
-    transaction: schemas.TransactionGetOne,
+    transaction_id: int,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     transaction_to_get = (
         db.query(models.Transaction)
-        .filter(models.Transaction.transaction_id == transaction.transaction_id)
+        .filter(models.Transaction.transaction_id == transaction_id)
         .first()
     )
 
@@ -57,7 +56,7 @@ def get_one_transaction(
 @router.get("/balance", status_code=200)
 def get_balance(
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
      # get the origin account balance
     check_main_account_credit = (
@@ -137,7 +136,7 @@ def get_balance(
 def create_transaction(
     transaction: schemas.TransactionCreate,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     existing_user = (
         db.query(models.User)
@@ -166,7 +165,7 @@ def create_transaction(
 def edit_transaction(
     transaction: schemas.TransactionUpdate,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     transaction_to_edit = (
         db.query(models.Transaction)
@@ -197,7 +196,7 @@ def edit_transaction(
 def delete_transaction(
     transaction: schemas.TransactionDelete,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     existing_transaction = (
         db.query(models.Transaction)
@@ -226,7 +225,7 @@ def delete_transaction(
 def move_funds(
     move_funds: schemas.MoveFunds,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if move_funds.user_id != user_auth.user_id:

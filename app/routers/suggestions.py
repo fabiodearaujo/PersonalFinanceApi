@@ -3,7 +3,6 @@ from app import models, oauth2, schemas
 from app.database import get_db
 from decouple import config
 from fastapi import APIRouter, Depends, status
-from pyparsing import DictType
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -15,7 +14,7 @@ TOKEN_SPECIAL = config("TOKEN_SPECIAL")
 # route to return all suggestions
 @router.get("/")
 def get_all_suggestions(
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
     db: Session = Depends(get_db),
 ):
     print(f"user aut : {user_auth.user_id}")
@@ -33,7 +32,7 @@ def get_all_suggestions(
 def create_suggestion(
     suggestion: schemas.SuggestionCreate,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access
@@ -54,7 +53,7 @@ def create_suggestion(
 def get_one_suggestion(
     suggestion: schemas.SuggestionGetOne,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access
@@ -75,7 +74,7 @@ def get_one_suggestion(
 def update_suggestion(
     suggestion_update: schemas.SuggestionUpdate,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access
@@ -101,7 +100,7 @@ def update_suggestion(
 def delete_suggestion(
     suggestion_info: schemas.SuggestionDelete,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
 
     # verify if user has special access

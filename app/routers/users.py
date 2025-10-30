@@ -2,7 +2,6 @@
 from app import models, oauth2, schemas, utils
 from app.database import get_db
 from fastapi import APIRouter, Depends, status
-from pyparsing import DictType
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -67,7 +66,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # route to get a user
 @router.get("/my_user", status_code=200)
-def get_my_user(user_auth: DictType = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+def get_my_user(user_auth: models.User = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     # get the user from the database
     user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
     schemas.MyUser = {"user_id": user.user_id, "email": user.email}
@@ -79,7 +78,7 @@ def get_my_user(user_auth: DictType = Depends(oauth2.get_current_user), db: Sess
 def update_user_email(
     user: schemas.UserUpdateEmail,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -118,7 +117,7 @@ def update_user_email(
 def update_user_password(
     user: schemas.UserUpdatePassword,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
@@ -156,7 +155,7 @@ def update_user_password(
 def delete_user(
     user: schemas.UserDelete,
     db: Session = Depends(get_db),
-    user_auth: DictType = Depends(oauth2.get_current_user),
+    user_auth: models.User = Depends(oauth2.get_current_user),
 ):
     # find the user to be deleted
     user_to_delete = (
