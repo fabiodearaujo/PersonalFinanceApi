@@ -7,7 +7,7 @@ import bcrypt
 # function to hash the password
 def hash_context(password: str):
     # Truncate password to 72 bytes if necessary
-    password_bytes = password.encode('utf-8')[:72]
+    password_bytes = password.encode("utf-8")[:72]
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password_bytes, salt)
     return bytes(hashed).hex()
