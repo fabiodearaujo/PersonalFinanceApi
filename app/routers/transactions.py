@@ -58,7 +58,7 @@ def get_balance(
     db: Session = Depends(get_db),
     user_auth: models.User = Depends(oauth2.get_current_user),
 ):
-     # get the origin account balance
+    # get the origin account balance
     check_main_account_credit = (
         db.query(models.Transaction)
         .filter(

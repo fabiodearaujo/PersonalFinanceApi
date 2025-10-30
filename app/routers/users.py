@@ -66,11 +66,16 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # route to get a user
 @router.get("/my_user", status_code=200)
-def get_my_user(user_auth: models.User = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+def get_my_user(
+    user_auth: models.User = Depends(oauth2.get_current_user),
+    db: Session = Depends(get_db),
+):
     # get the user from the database
-    user = db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
-    schemas.MyUser = {"user_id": user.user_id, "email": user.email}
-    return schemas.MyUser, status.HTTP_200_OK
+    user = (
+        db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
+    )
+    user_data = {"user_id": user.user_id, "email": user.email}
+    return schemas.MyUser(**user_data), status.HTTP_200_OK
 
 
 # route to update a user details

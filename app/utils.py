@@ -1,6 +1,8 @@
-import re
 import datetime
+import re
+
 import bcrypt
+
 
 # function to hash the password
 def hash_context(password: str):
@@ -47,5 +49,5 @@ def check_password_strength(password):
 
 # function to get the current date
 def get_current_date():
-    today = datetime.datetime.today().strftime('%Y-%m-%d')
+    today = datetime.datetime.today().strftime("%Y-%m-%d")
     return today

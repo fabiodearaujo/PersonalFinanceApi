@@ -9,22 +9,24 @@ def get_database_url():
     """Get database URL with proper SSL settings"""
     db_url = config("SQLALCHEMY_DB_URL")
     connect_args = {
-        'connect_timeout': 10,  # 10 seconds timeout
-        'keepalives': 1,       # Enable keepalives
-        'keepalives_idle': 30, # Send keepalive after 30 seconds of idle
-        'keepalives_interval': 10, # Send keepalive every 10 seconds
-        'keepalives_count': 5  # Try 5 times before giving up
+        "connect_timeout": 10,  # 10 seconds timeout
+        "keepalives": 1,  # Enable keepalives
+        "keepalives_idle": 30,  # Send keepalive after 30 seconds of idle
+        "keepalives_interval": 10,  # Send keepalive every 10 seconds
+        "keepalives_count": 5,  # Try 5 times before giving up
     }
-    
+
     # If it's a remote database, add SSL configuration
-    if not any(local in db_url for local in ('localhost', '127.0.0.1')):
-        connect_args.update({
-            'sslmode': 'require',
-            'sslcert': None,  # Path to client certificate if needed
-            'sslkey': None,   # Path to client key if needed
-            'sslrootcert': None  # Path to root certificate if needed
-        })
-    
+    if not any(local in db_url for local in ("localhost", "127.0.0.1")):
+        connect_args.update(
+            {
+                "sslmode": "require",
+                "sslcert": None,  # Path to client certificate if needed
+                "sslkey": None,  # Path to client key if needed
+                "sslrootcert": None,  # Path to root certificate if needed
+            }
+        )
+
     return db_url, connect_args
 
 
