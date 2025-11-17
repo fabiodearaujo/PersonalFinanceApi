@@ -33,11 +33,13 @@ def verify_context(plain_password, hashed_password):
 
 # function to check password strength
 def check_password_strength(password):
-    # Minimum 8 characters, maximum 20 characters, at least one uppercase letter, one lowercase letter, one number and one special character
+    # Minimum 8 characters, maximum 20 characters, at least one uppercase letter,
+    #  one lowercase letter, one number and one special character
     pattern = re.compile(
         r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$"
     )
     return bool(pattern.match(password))
+
 
 # function to get the current date
 def get_current_date():

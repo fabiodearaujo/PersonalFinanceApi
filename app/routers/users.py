@@ -17,8 +17,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     )
     if check_user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User already exists."
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists."
         )
 
     # check if password is strong enough
@@ -28,7 +27,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
             detail=(
                 "Password is not strong enough. (Minimum of 8 characters, "
                 "upper and lower case, number and a special symbol.)"
-            )
+            ),
         )
 
     # hash the password
@@ -98,9 +97,7 @@ def update_user_email(
     if user.user_id != user_auth.user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=(
-                "You are not authorized to update this user."
-            )
+            detail=("You are not authorized to update this user."),
         )
 
     # check if the user already exists
@@ -109,8 +106,7 @@ def update_user_email(
     )
     if check_user_email:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User already exists."
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists."
         )
 
     # return user details
@@ -125,8 +121,7 @@ def update_user_email(
     verify_password = utils.verify_context(user.password, check_user.password)
     if not verify_password:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect credentials."
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect credentials."
         )
 
     # update the user email
