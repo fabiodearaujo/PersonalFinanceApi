@@ -82,8 +82,18 @@ def get_my_user(
     user = (
         db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
     )
-    user_data = {"user_id": user.user_id, "email": user.email}
-    return schemas.MyUser(**user_data)
+    
+    # Check if user exists
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
+        )
+    
+    # Return user data using MyUser schema
+    return schemas.MyUser(
+        user_id=user.user_id,
+        email=user.email
+    )
 
 
 # route to update a user details

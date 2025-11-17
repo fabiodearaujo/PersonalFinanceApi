@@ -9,9 +9,12 @@ class UserBase(BaseModel):
     password: str
 
 
-class MyUser(UserBase):
+class MyUser(BaseModel):
     user_id: int
     email: EmailStr
+    
+    class Config:
+        orm_mode = True
 
 
 class UserCreate(UserBase):
