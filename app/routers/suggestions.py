@@ -49,8 +49,9 @@ def create_suggestion(
 
 
 # route to return one suggestion
-@router.get("/get_one", status_code=200)
+@router.get("/get_one/{suggestion_id}", status_code=200)
 def get_one_suggestion(
+    suggestion_id: int,
     suggestion: schemas.SuggestionGetOne,
     db: Session = Depends(get_db),
     user_auth: models.User = Depends(oauth2.get_current_user),
@@ -63,7 +64,7 @@ def get_one_suggestion(
         }, status.HTTP_401_UNAUTHORIZED
     suggestion = (
         db.query(models.Suggestion)
-        .filter(models.Suggestion.suggestion_id == suggestion.suggestion_id)
+        .filter(models.Suggestion.suggestion_id == suggestion_id)
         .first()
     )
     return {"data": suggestion}, status.HTTP_200_OK
