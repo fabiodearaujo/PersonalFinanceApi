@@ -1,7 +1,7 @@
 # necessary imports
 from app import models, oauth2, schemas, utils
 from app.database import get_db
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -16,16 +16,20 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db.query(models.User).filter(models.User.email == user.email.lower()).first()
     )
     if check_user:
-        return {"error": "User already exists."}, status.HTTP_400_BAD_REQUEST
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User already exists."
+        )
 
     # check if password is strong enough
     if not utils.check_password_strength(user.password):
-        return {
-            "error": (
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
                 "Password is not strong enough. (Minimum of 8 characters, "
                 "upper and lower case, number and a special symbol.)"
             )
-        }, status.HTTP_400_BAD_REQUEST
+        )
 
     # hash the password
     hashed_password = utils.hash_context(user.password)
@@ -49,7 +53,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         transaction_date=utils.get_current_date(),
         account_type="main",
     )
-    new_main_transaction = models.Transaction(**new_main_account.dict())
+    new_main_transaction = models.Transaction(**new_main_account.model_dump())
 
     new_savings_account = schemas.TransactionCreate(
         user_id=user_created.user_id,
@@ -60,13 +64,13 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         transaction_date=utils.get_current_date(),
         account_type="savings",
     )
-    new_savings_transaction = models.Transaction(**new_savings_account.dict())
+    new_savings_transaction = models.Transaction(**new_savings_account.model_dump())
 
     db.add(new_main_transaction)
     db.add(new_savings_transaction)
     db.commit()
 
-    return {"Message": "User created successfully."}, status.HTTP_201_CREATED
+    return {"Message": "User created successfully."}
 
 
 # route to get a user
@@ -80,7 +84,7 @@ def get_my_user(
         db.query(models.User).filter(models.User.user_id == user_auth.user_id).first()
     )
     user_data = {"user_id": user.user_id, "email": user.email}
-    return schemas.MyUser(**user_data), status.HTTP_200_OK
+    return schemas.MyUser(**user_data)
 
 
 # route to update a user details
@@ -92,16 +96,22 @@ def update_user_email(
 ):
     # verify if it is the correct user
     if user.user_id != user_auth.user_id:
-        return {
-            "error": "You are not authorized to update this user."
-        }, status.HTTP_401_UNAUTHORIZED
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=(
+                "You are not authorized to update this user."
+            )
+        )
 
     # check if the user already exists
     check_user_email = (
         db.query(models.User).filter(models.User.email == user.email.lower()).first()
     )
     if check_user_email:
-        return {"error": "User already exists."}, status.HTTP_400_BAD_REQUEST
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User already exists."
+        )
 
     # return user details
     check_user = (
@@ -114,12 +124,15 @@ def update_user_email(
     # verify if password is correct
     verify_password = utils.verify_context(user.password, check_user.password)
     if not verify_password:
-        return {"error": "Incorrect credentials."}, status.HTTP_400_BAD_REQUEST
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect credentials."
+        )
 
     # update the user email
     check_user.email = user.email
     db.commit()
-    return {"Message": "User updated successfully."}, status.HTTP_200_OK
+    return {"Message": "User updated successfully."}
 
 
 # route to update a user password
