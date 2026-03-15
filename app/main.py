@@ -18,7 +18,7 @@ app_download = config("APP_URL")
 app = FastAPI(
     title="Personal Finance API",
     description="This API is the backend part of the Personal Finance APP.",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 # add CORS middleware
